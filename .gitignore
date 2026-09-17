@@ -10,4 +10,3 @@ skills-lock.json
 coverage/
 test/fixtures/.tmp/
 .vercel
-.env*
