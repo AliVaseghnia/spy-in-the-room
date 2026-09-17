@@ -159,7 +159,11 @@
       : (customMode
         ? 'Keep it secret. Let go and it hides.'
         : 'Category: ' + card.category + '. Let go and it hides.');
-    if (refs.revealActionLabel) refs.revealActionLabel.textContent = 'Let go to hide';
+    if (refs.revealActionLabel) {
+      refs.revealActionLabel.textContent = state.timedReveal
+        ? 'Hide card now'
+        : 'Let go to hide';
+    }
     refs.revealAction.setAttribute('aria-pressed', 'true');
     if (refs.holdNote) refs.holdNote.textContent = state.timedReveal
       ? 'Auto-hiding in a few seconds. Tap the button to hide it now.'

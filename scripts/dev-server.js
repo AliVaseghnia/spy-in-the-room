@@ -117,6 +117,15 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  // Vercel injects the insights script in production; answer it here so the
+  // dev console stays clean.
+  if (pathname === '/_vercel/insights/script.js') {
+    response.statusCode = 200;
+    response.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+    response.end('');
+    return;
+  }
+
   if (pathname.startsWith('/api/')) {
     const route = resolveApiRoute(pathname);
     if (!route) {
