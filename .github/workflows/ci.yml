@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the test suite
+        run: npm test
+
+      - name: Syntax-check the browser and worker scripts
+        run: |
+          node --check game-logic.js
+          node --check prefs.js
+          node --check api-client.js
+          node --check game-view.js
+          node --check game.js
+          node --check service-worker.js
+          node --check scripts/dev-server.js
+
+      - name: Check for whitespace errors
+        run: git diff --check

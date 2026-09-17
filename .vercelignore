@@ -1,0 +1,11 @@
+.env*
+.git/
+.github/
+.superpowers/
+node_modules/
+test/
+docs/
+database/migrations/
+scripts/
+README.md
+*.md

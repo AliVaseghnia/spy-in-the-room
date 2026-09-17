@@ -1,0 +1,128 @@
+:root {
+  color-scheme: dark;
+  --bg: #10161e;
+  --surface: #171f29;
+  --border: #2b3948;
+  --text: #f5efe6;
+  --muted: #c4ccd6;
+  --amber: #efb36d;
+  --amber-ink: #1e1710;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--bg);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 1.25rem;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  width: min(100%, 34rem);
+  padding: clamp(1.5rem, 7vw, 3rem);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 22%);
+}
+
+.brand-mark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 2rem;
+  place-items: center;
+  border: 1px solid var(--amber);
+  border-radius: 0.625rem;
+  color: var(--amber);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--amber);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  line-height: 1.05;
+}
+
+.lede,
+.note {
+  color: var(--muted);
+}
+
+.lede {
+  margin: 1.25rem 0 0;
+  font-size: 1.1rem;
+}
+
+.status {
+  min-height: 3.25rem;
+  margin: 1.5rem 0;
+  padding: 0.875rem 1rem;
+  border-left: 3px solid var(--amber);
+  background: var(--bg);
+}
+
+button {
+  min-height: 2.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--amber);
+  border-radius: 0.625rem;
+  background: var(--amber);
+  color: var(--amber-ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button:focus-visible {
+  outline: 3px solid var(--bg);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--amber);
+}
+
+.note {
+  margin: 1.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

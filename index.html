@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#10161e">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="description" content="Pass one phone around the room. Everyone gets the secret except the spies.">
+    <meta property="og:title" content="Spy in the Room — Pass the phone">
+    <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
+    <meta name="twitter:card" content="summary">
+    <title>Spy in the Room — Pass the phone</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to game</a>
+    <div id="app" class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="./" aria-label="Spy in the Room home">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span class="brand-name">SPY IN THE ROOM</span>
+        </a>
+
+        <div class="status-row" id="game-hud" aria-label="Game status">
+          <span class="status-item">
+            <span class="status-label">Phase</span>
+            <span id="phase-label" class="status-value">Setup</span>
+          </span>
+          <span class="status-item">
+            <span class="status-label">Players</span>
+            <span id="round-status" class="status-value">4 to 12 players</span>
+          </span>
+          <span class="status-item status-connection">
+            <span class="status-label">Connection</span>
+            <span id="connection-status" class="status-value">Checking</span>
+          </span>
+        </div>
+
+        <div class="header-actions">
+          <button id="how-to-play-button" class="button button-secondary button-small" type="button" aria-haspopup="dialog" aria-controls="how-to-play-dialog">Rules</button>
+          <button id="settings-button" class="button button-secondary button-small button-icon" type="button" aria-haspopup="dialog" aria-controls="settings-dialog" aria-label="Settings">
+            <span aria-hidden="true">⚙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <main id="main-content" class="game-layout" data-game-stage>
+        <div class="main-column">
+          <section class="intro" aria-labelledby="page-title" data-marketing-shell>
+            <div class="intro-copy-block">
+              <p class="eyebrow">A pass-the-phone game</p>
+              <h1 id="page-title">Someone in this room is lying.</h1>
+              <p class="intro-lede">Pass the phone. Keep the secret. Find the spies.</p>
+            </div>
+          </section>
+
+          <section id="resume-view" class="phase-view action-card" aria-labelledby="resume-title" hidden>
+            <div class="phase-heading">
+              <p class="section-kicker">Pick up where you left off</p>
+              <h2 id="resume-title">Back to the game</h2>
+              <p>Your saved games are below. Or start fresh.</p>
+              <p class="field-help">Saved here for 30 days. They stay tied to this browser.</p>
+            </div>
+
+            <ul id="resume-list" class="resume-list" aria-live="polite" aria-label="Games available to resume">
+              <li class="choice-empty loading">Looking for saved games…</li>
+            </ul>
+
+            <button id="resume-new-game-button" class="button button-secondary button-wide" type="button">New game</button>
+          </section>
+
+          <section id="connection-error" class="connection-error" role="alert" hidden>
+            <div>
+              <p class="section-kicker">Connection hiccup</p>
+              <p id="connection-error-message">We can’t reach the game right now.</p>
+            </div>
+            <button id="retry-button" class="button button-secondary" type="button">Retry</button>
+          </section>
+
+          <section id="setup-view" class="phase-view action-card" data-phase="setup" aria-labelledby="setup-title">
+            <div class="phase-heading">
+              <p class="section-kicker">01 / Get ready</p>
+              <h2 id="setup-title">Who’s in the room?</h2>
+              <p>Add your players — 4 to 12. Give the phone a shake and we’ll deal the roles.</p>
+            </div>
+
+            <form id="player-form" class="setup-form" novalidate>
+              <fieldset class="roster-fieldset">
+                <legend class="field-legend">
+                  <span>Player names</span>
+                  <span id="player-count" class="field-count">0 / 12</span>
+                </legend>
+
+                <div class="roster-entry">
+                  <label class="sr-only" for="player-name-input">Player name</label>
+                  <input id="player-name-input" type="text" autocomplete="off" maxlength="32" placeholder="Type a name" enterkeyhint="add" aria-describedby="player-help player-empty-state player-error">
+                  <button id="add-player-button" class="button button-secondary" type="button" data-add-player>Add</button>
+                </div>
+                <p id="player-help" class="field-help">Press enter or Add after each name. No duplicates.</p>
+
+                <ul id="player-chips" class="player-chips" aria-label="Players"></ul>
+
+                <p id="player-empty-state" class="field-message" role="status">Add 4 names to start.</p>
+                <p id="player-error" class="field-message field-message-error" role="alert" hidden></p>
+              </fieldset>
+
+              <fieldset class="setup-fieldset">
+                <legend class="field-legend">Round length</legend>
+                <div class="segmented" role="radiogroup" aria-label="Round length in minutes">
+                  <label class="segment" for="timer-180">
+                    <input id="timer-180" name="timerSeconds" type="radio" value="180">
+                    <span><strong>3</strong> min</span>
+                  </label>
+                  <label class="segment" for="timer-300">
+                    <input id="timer-300" name="timerSeconds" type="radio" value="300" checked>
+                    <span><strong>5</strong> min</span>
+                  </label>
+                  <label class="segment" for="timer-480">
+                    <input id="timer-480" name="timerSeconds" type="radio" value="480">
+                    <span><strong>8</strong> min</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="secret-source-fieldset">
+                <legend class="field-legend">Pick the secret</legend>
+                <p id="secret-source-help" class="field-help">Use a built-in location, or bring your own secret.</p>
+                <div class="secret-mode-options" role="radiogroup" aria-describedby="secret-source-help">
+                  <label class="mode-option" for="secret-mode-deck">
+                    <input id="secret-mode-deck" name="secretMode" type="radio" value="deck" checked>
+                    <span>
+                      <strong>Random location</strong>
+                      <small>A built-in location</small>
+                    </span>
+                  </label>
+                  <label class="mode-option" for="secret-mode-custom">
+                    <input id="secret-mode-custom" name="secretMode" type="radio" value="custom">
+                    <span>
+                      <strong>Your own secret</strong>
+                      <small>Bring your own word or phrase</small>
+                    </span>
+                  </label>
+                </div>
+                <div id="custom-secret-field" class="custom-secret-field" hidden>
+                  <label for="custom-secret-input">Secret for round 1</label>
+                  <input id="custom-secret-input" name="customSecret" type="text" maxlength="80" autocomplete="off" placeholder="e.g. rooftop garden" aria-describedby="custom-secret-help custom-secret-error">
+                  <p id="custom-secret-help" class="field-help">Keep it short and easy to say. It stays hidden until the reveal.</p>
+                  <p id="custom-secret-error" class="field-message field-message-error" role="alert" hidden></p>
+                </div>
+              </fieldset>
+
+              <label class="spice-option" for="spice-toggle">
+                <input id="spice-toggle" type="checkbox">
+                <span>
+                  <strong>Chaos mode</strong>
+                  <small>One public twist per round. Opt in, opt out.</small>
+                </span>
+              </label>
+            </form>
+
+            <div class="sticky-action">
+              <button id="start-button" class="button button-primary button-wide" type="submit" form="player-form" disabled>Deal the cards</button>
+            </div>
+          </section>
+
+          <section id="reveal-view" class="phase-view action-card" data-phase="reveal" aria-labelledby="reveal-title" hidden>
+            <div class="handoff">
+              <span id="reveal-avatar" class="avatar avatar-large" aria-hidden="true">🦊</span>
+              <p class="section-kicker" id="reveal-progress">Card 1 of 5</p>
+              <h2 id="reveal-title">Pass the phone to <span id="reveal-name">Player 1</span></h2>
+              <p>Only the named player should look at this card.</p>
+            </div>
+
+            <div id="reveal-card" class="secret-card">
+              <div class="secret-card-inner">
+                <div class="secret-card-front" aria-hidden="true">
+                  <span class="secret-card-front-mark" aria-hidden="true">🕵️</span>
+                  <p class="secret-label">Classified</p>
+                  <p class="secret-hint">Hold the button below to peek</p>
+                </div>
+                <div id="reveal-card-face" class="secret-card-face">
+                  <img id="reveal-art" class="phase-art reveal-art" src="assets/pass-phone.png" alt="" aria-hidden="true">
+                  <p id="reveal-label" class="secret-label">Your card is ready</p>
+                  <p id="reveal-secret" class="secret-value">Hold to reveal.</p>
+                  <p id="reveal-hint" class="secret-hint">Peek, hide, pass.</p>
+                </div>
+              </div>
+              <div id="privacy-cover" class="privacy-cover" hidden aria-hidden="true">
+                <span class="privacy-cover-mark" aria-hidden="true">•••</span>
+                <span>Card hidden</span>
+              </div>
+            </div>
+
+            <div class="sticky-action">
+              <button id="reveal-action" class="button button-primary button-wide hold-button" type="button" aria-describedby="reveal-hint">
+                <span id="reveal-action-label">Hold to reveal</span>
+              </button>
+              <p class="hold-note" id="hold-note">Press and hold while you read. Let go and it hides.</p>
+            </div>
+          </section>
+
+          <section id="round-view" class="phase-view action-card" data-phase="round" aria-labelledby="round-title" hidden>
+            <div class="phase-heading">
+              <p class="section-kicker">03 / Ask around</p>
+              <h2 id="round-title">Ask your questions</h2>
+              <p>Bluff carefully. The secret stays hidden until the vote.</p>
+            </div>
+
+            <div class="round-top">
+              <div class="timer-ring" id="timer-ring" role="timer" aria-label="Time left">
+                <svg class="timer-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="timer-ring-track" cx="60" cy="60" r="52"></circle>
+                  <circle id="timer-ring-progress" class="timer-ring-progress" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <div class="timer-ring-face">
+                  <strong id="round-timer" class="timer-value">05:00</strong>
+                  <span class="timer-label">Time left</span>
+                </div>
+              </div>
+              <div class="round-intel">
+                <p id="round-intel" class="intel-line">1 spy among 5</p>
+                <p id="twist-strip" class="twist-strip" hidden>
+                  <span class="twist-tag">Twist</span>
+                  <span id="twist-text"></span>
+                </p>
+              </div>
+            </div>
+
+            <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
+
+            <div class="question-card">
+              <div class="question-card-head">
+                <p class="section-kicker">Need a question?</p>
+                <button id="draw-question-button" class="button button-secondary button-small" type="button">Draw another</button>
+              </div>
+              <p id="question-prompt" class="question-prompt">What is the first thing you notice when you walk in?</p>
+            </div>
+
+            <details class="question-protocol">
+              <summary>House rules</summary>
+              <ul class="rules-list">
+                <li>Ask one question, then let that player ask next.</li>
+                <li>No follow-ups, and don’t ask the previous questioner right away.</li>
+              </ul>
+            </details>
+
+            <div class="round-actions">
+              <button id="end-round-button" class="button button-primary button-wide" type="button">End round &amp; vote</button>
+              <button id="call-guess-button" class="button button-ghost button-wide" type="button">Spy: I have the secret</button>
+            </div>
+
+            <div id="guess-call-panel" class="inline-panel" aria-labelledby="guess-call-title" hidden>
+              <p class="section-kicker">Private call</p>
+              <h3 id="guess-call-title">Who wants to guess?</h3>
+              <p>Pass the phone to the player who wants to risk a guess. The round ends either way.</p>
+              <ul id="guess-caller-list" class="choice-list" aria-label="Choose who wants to guess"></ul>
+            </div>
+          </section>
+
+          <section id="accuse-view" class="phase-view action-card" data-phase="accuse" aria-labelledby="accuse-title" hidden>
+            <div class="phase-heading">
+              <p class="section-kicker">04 / Call it</p>
+              <h2 id="accuse-title">Who is the spy?</h2>
+              <p>Talk it out. When the room agrees, pick one suspect. Pick wrong and the spies take the round.</p>
+            </div>
+
+            <ul id="suspect-list" class="choice-list suspect-grid" aria-label="Pick a suspect">
+              <li class="choice-empty">Players will show up here.</li>
+            </ul>
+          </section>
+
+          <section id="guess-view" class="phase-view action-card" data-phase="guess" aria-labelledby="guess-title" hidden>
+            <div class="phase-heading">
+              <p class="section-kicker">04 / One last shot</p>
+              <h2 id="guess-title">One last shot</h2>
+              <p>Each spy gets one shot. Pick or type the secret the room saw.</p>
+            </div>
+
+            <p id="guess-turn-label" class="rule-strip">Pass the phone to the guessing player.</p>
+
+            <div class="guess-guide" aria-label="How the last shot works">
+              <img class="phase-art guess-art" src="assets/role-spy.png" alt="" aria-hidden="true">
+              <div>
+                <p class="guess-guide-title">One shot at a time</p>
+                <p class="guess-guide-copy">One correct guess is enough for the spies. Miss all around, and the room wins.</p>
+              </div>
+            </div>
+
+            <div id="guess-search-field" class="guess-search-field">
+              <label class="sr-only" for="guess-search-input">Search locations</label>
+              <input id="guess-search-input" type="search" autocomplete="off" placeholder="Search locations" aria-describedby="guess-search-help">
+              <p id="guess-search-help" class="field-help">Tap the secret you think the room saw.</p>
+            </div>
+
+            <ul id="guess-list" class="choice-list guess-grid" aria-label="Pick the secret">
+              <li class="choice-empty">Secret choices will show up here.</li>
+            </ul>
+
+            <form id="guess-custom-form" class="guess-custom-form" novalidate hidden>
+              <label for="guess-input">Your guess</label>
+              <input id="guess-input" type="text" maxlength="80" autocomplete="off" placeholder="Type the secret" aria-describedby="guess-input-help guess-input-error">
+              <p id="guess-input-help" class="field-help">Only the named spy should type here. The guess stays hidden until the reveal.</p>
+              <p id="guess-input-error" class="field-message field-message-error" role="alert" hidden></p>
+              <button class="button button-primary button-wide" type="submit">Check the guess</button>
+            </form>
+          </section>
+
+          <section id="result-view" class="phase-view action-card" data-phase="result" aria-labelledby="result-title" hidden>
+            <div id="result-stamp" class="result-stamp" aria-hidden="true">
+              <span id="result-stamp-label">Room wins</span>
+            </div>
+
+            <div class="phase-heading">
+              <p class="section-kicker">05 / Reveal</p>
+              <h2 id="result-title">The room wins</h2>
+              <p id="result-copy">You found the spy before the clock ran out.</p>
+            </div>
+
+            <dl class="result-details">
+              <div>
+                <dt id="result-secret-label">Secret</dt>
+                <dd id="result-location">Unknown</dd>
+              </div>
+              <div>
+                <dt>Spy team</dt>
+                <dd>
+                  <ul id="result-spies" class="spy-list">
+                    <li>Unknown</li>
+                  </ul>
+                </dd>
+              </div>
+            </dl>
+
+            <section class="score-panel" aria-labelledby="score-title">
+              <div class="phase-heading">
+                <p class="section-kicker">Scoreboard</p>
+                <h3 id="score-title">Who’s ahead?</h3>
+                <p id="session-score-status">Round score is on the board.</p>
+              </div>
+              <p id="result-progress" class="result-progress">Round 1 of 5</p>
+              <div class="score-columns">
+                <div>
+                  <h4>Round points</h4>
+                  <ul id="round-points-list" class="score-list" aria-label="Points from this round"></ul>
+                </div>
+                <div>
+                  <h4>Leaderboard</h4>
+                  <ol id="scoreboard-list" class="score-list leaderboard" aria-label="Session leaderboard"></ol>
+                </div>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <button id="replay-button" class="button button-primary" type="button">Next round</button>
+              <button id="share-result-button" class="button button-secondary" type="button">Share result</button>
+              <button id="new-game-button" class="button button-secondary" type="button">New game</button>
+              <button id="delete-game-button" class="button button-danger" type="button">Delete game</button>
+            </div>
+
+            <section id="replay-secret-panel" class="inline-panel replay-secret-panel" aria-labelledby="replay-secret-title" hidden>
+              <div class="replay-secret-heading">
+                <img class="phase-art replay-art" src="assets/role-agent.png" alt="" aria-hidden="true">
+                <div>
+                  <p class="section-kicker">Next round</p>
+                  <h3 id="replay-secret-title">Pick the next secret</h3>
+                </div>
+              </div>
+              <p>Custom mode is on. Enter a fresh secret, then pass the phone.</p>
+              <form id="replay-secret-form" novalidate>
+                <label for="replay-secret-input">Secret for round <span id="replay-secret-round">2</span></label>
+                <input id="replay-secret-input" type="text" maxlength="80" autocomplete="off" placeholder="e.g. rooftop garden" aria-describedby="replay-secret-help replay-secret-error">
+                <p id="replay-secret-help" class="field-help">The next secret stays hidden while the round is live.</p>
+                <p id="replay-secret-error" class="field-message field-message-error" role="alert" hidden></p>
+                <div class="button-row">
+                  <button id="replay-secret-submit" class="button button-primary" type="submit">Start next round</button>
+                  <button id="replay-secret-cancel" class="button button-secondary" type="button">Keep the result</button>
+                </div>
+              </form>
+            </section>
+
+            <section id="delete-confirmation" class="delete-confirmation" aria-labelledby="delete-title" hidden>
+              <h3 id="delete-title">Delete this game?</h3>
+              <p>This removes the roster and completed rounds. You can’t undo this.</p>
+              <div class="button-row">
+                <button id="confirm-delete-button" class="button button-danger" type="button">Delete game</button>
+                <button id="cancel-delete-button" class="button button-secondary" type="button">Keep game</button>
+              </div>
+            </section>
+
+            <section id="history-panel" class="history-panel" aria-labelledby="history-title">
+              <div class="phase-heading">
+                <p class="section-kicker">Past rounds</p>
+                <h3 id="history-title">Round history</h3>
+              </div>
+              <ul id="history-list" class="history-list" aria-label="Round history">
+                <li id="history-empty" class="choice-empty">No rounds in the books yet.</li>
+              </ul>
+            </section>
+          </section>
+        </div>
+      </main>
+
+      <footer class="site-footer">
+        <span>Pass one phone</span>
+        <span aria-hidden="true">/</span>
+        <span>Keep it secret</span>
+        <span aria-hidden="true">/</span>
+        <span><a href="https://github.com/AliVaseghnia/spy-in-the-room">GitHub</a></span>
+      </footer>
+    </div>
+
+    <dialog id="how-to-play-dialog" class="modal how-to-play-modal" aria-modal="true" aria-labelledby="how-to-play-title" aria-describedby="how-to-play-summary" hidden>
+      <div class="how-to-play-panel">
+        <div class="how-to-play-heading">
+          <div>
+            <p class="section-kicker">The short version</p>
+            <h2 id="how-to-play-title">How to play</h2>
+          </div>
+          <button id="close-how-to-play-button" class="button button-secondary button-small" type="button">Close</button>
+        </div>
+
+        <p id="how-to-play-summary" class="how-to-play-summary">One phone. One secret. Spies hiding in plain sight.</p>
+
+        <ol class="how-to-play-list">
+          <li class="how-to-play-step">
+            <span class="how-to-play-number" aria-hidden="true">01</span>
+            <div>
+              <h3>Get the room ready</h3>
+              <p>Add 4–12 names. Pick a location, or bring your own secret.</p>
+            </div>
+          </li>
+          <li class="how-to-play-step">
+            <span class="how-to-play-number" aria-hidden="true">02</span>
+            <div>
+              <h3>Hold to peek, then pass</h3>
+              <p>Press and hold to read your card. It hides the moment you let go.</p>
+            </div>
+          </li>
+          <li class="how-to-play-step">
+            <span class="how-to-play-number" aria-hidden="true">03</span>
+            <div>
+              <h3>Ask, bluff, accuse</h3>
+              <p>Talk around the location without giving it away. Watch who sounds lost.</p>
+            </div>
+          </li>
+          <li class="how-to-play-step">
+            <span class="how-to-play-number" aria-hidden="true">04</span>
+            <div>
+              <h3>Vote, then guess</h3>
+              <p>Pick the spy. If you’re right, the spy gets one last shot at the secret.</p>
+            </div>
+          </li>
+        </ol>
+
+        <dl class="how-to-play-facts">
+          <div>
+            <dt>Players</dt>
+            <dd>4–12</dd>
+          </div>
+          <div>
+            <dt>Round</dt>
+            <dd>3, 5, or 8 min</dd>
+          </div>
+          <div>
+            <dt>Spies</dt>
+            <dd>1 or 2</dd>
+          </div>
+        </dl>
+
+        <div class="how-to-play-note">
+          <p class="section-kicker">Win condition</p>
+          <p>Find the spies before the clock runs out. Pick the wrong player and the spies take the round.</p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="settings-dialog" class="modal settings-modal" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <div class="inline-panel">
+        <p class="section-kicker">Table settings</p>
+        <h3 id="settings-title">Sound &amp; haptics</h3>
+        <p>Text and visuals still do all the talking. These cues are backup.</p>
+        <div class="settings-list">
+          <label class="toggle-option" for="sound-toggle">
+            <input id="sound-toggle" type="checkbox">
+            <span>Sound</span>
+          </label>
+          <label class="toggle-option" for="haptics-toggle">
+            <input id="haptics-toggle" type="checkbox">
+            <span>Haptics when supported</span>
+          </label>
+        </div>
+        <div class="settings-memory">
+          <p class="field-help">This device remembers the last roster and these toggles. Nothing else is stored.</p>
+          <button id="forget-roster-button" class="button button-secondary button-small" type="button">Forget remembered players</button>
+        </div>
+        <div class="button-row">
+          <button id="close-settings-button" class="button button-primary" type="button">Back to the game</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="resume-delete-dialog" class="modal" aria-modal="true" aria-labelledby="resume-delete-title" hidden>
+      <div class="inline-panel">
+        <p class="section-kicker">Saved game</p>
+        <h3 id="resume-delete-title">Delete this game?</h3>
+        <p id="resume-delete-copy">This removes the roster and round history. You can’t undo this.</p>
+        <div class="button-row">
+          <button id="confirm-resume-delete-button" class="button button-danger" type="button">Delete game</button>
+          <button id="cancel-resume-delete-button" class="button button-secondary" type="button">Keep game</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="end-round-dialog" class="modal end-round-modal" aria-modal="true" aria-labelledby="end-round-title" aria-describedby="end-round-summary" hidden>
+      <div class="inline-panel">
+        <p class="section-kicker">Still investigating</p>
+        <h3 id="end-round-title">End the round?</h3>
+        <p id="end-round-summary">The clock stops here. Then the room votes. You can’t undo this.</p>
+        <div class="button-row">
+          <button id="confirm-end-round-button" class="button button-primary" type="button">End round</button>
+          <button id="cancel-end-round-button" class="button button-secondary" type="button">Keep investigating</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="accusation-dialog" class="modal" aria-modal="true" aria-labelledby="accusation-confirmation-title" hidden>
+      <div id="accusation-confirmation" class="inline-panel">
+        <p class="section-kicker">Room vote</p>
+        <h3 id="accusation-confirmation-title">Lock in the accusation?</h3>
+        <p id="accusation-confirmation-copy">The room agrees: this player is the spy. Pick wrong and the spies take the round.</p>
+        <div class="button-row">
+          <button id="confirm-accusation-button" class="button button-primary" type="button">Lock it in</button>
+          <button id="cancel-accusation-button" class="button button-secondary" type="button">Choose again</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="guess-dialog" class="modal" aria-modal="true" aria-labelledby="guess-confirmation-title" hidden>
+      <div class="inline-panel">
+        <p class="section-kicker">One last shot</p>
+        <h3 id="guess-confirmation-title">Lock in this guess?</h3>
+        <p id="guess-confirmation-copy">The spy will lock in this answer. There’s no changing it after this.</p>
+        <div class="button-row">
+          <button id="confirm-guess-button" class="button button-primary" type="button">Lock it in</button>
+          <button id="cancel-guess-button" class="button button-secondary" type="button">Choose again</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="game-logic.js"></script>
+    <script src="prefs.js"></script>
+    <script src="api-client.js"></script>
+    <script src="game-view.js"></script>
+    <script src="game.js"></script>
+
+    <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
+    <script src="analytics-bootstrap.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </body>
+</html>

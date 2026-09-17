@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.vercel/
+.superpowers/
+.agents/
+skills-lock.json
+*.log
+coverage/
+test/fixtures/.tmp/
+.vercel
+.env*
