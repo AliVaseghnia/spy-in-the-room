@@ -2,7 +2,7 @@
 
 // Bump CACHE_NAME when any precached shell asset changes.
 const CACHE_PREFIX = 'spy-in-the-room-shell-';
-const CACHE_NAME = 'spy-in-the-room-shell-v13';
+const CACHE_NAME = 'spy-in-the-room-shell-v14';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = Object.freeze([
   '/',
@@ -67,7 +67,7 @@ async function handlePrecachedAsset(request) {
   try {
     return await fetch(request);
   } catch {
-    const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request, { ignoreSearch: true });
     return cachedResponse || new Response(
       'No connection. Reconnect and try again.',
       {

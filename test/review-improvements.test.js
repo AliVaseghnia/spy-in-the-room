@@ -47,7 +47,7 @@ test('phase rendering lives in a dedicated view module instead of the controller
   const controller = readProjectFile('game.js');
 
   assert.equal(fs.existsSync(path.join(PROJECT_ROOT, 'game-view.js')), true);
-  assert.match(html, /<script[^>]+src=["']game-view\.js["']/i);
+  assert.match(html, /<script[^>]+src=["']game-view\.js(?:\?[^"']*)?["']/i);
   assert.match(controller, /SpyGameView/);
   assert.doesNotMatch(controller, /function renderResult\s*\(/);
   assert.doesNotMatch(controller, /function renderResume\s*\(/);

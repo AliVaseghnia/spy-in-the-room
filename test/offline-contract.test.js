@@ -105,8 +105,28 @@ test('service worker precaches only the versioned static shell and never runtime
   // stylesheet with a freshly deployed HTML shell; the cache is a fallback.
   assert.match(
     worker,
-    /async function handlePrecachedAsset[\s\S]*?await fetch\(request\)[\s\S]*?caches\.match\(request\)/
+    /async function handlePrecachedAsset[\s\S]*?await fetch\(request\)[\s\S]*?caches\.match\(request,\s*\{\s*ignoreSearch:\s*true\s*\}\)/
   );
+});
+
+test('the shell version-stamps assets so pre-v13 workers cannot serve stale files', () => {
+  const html = readProjectFile('index.html');
+
+  for (const asset of [
+    'styles.css',
+    'game-logic.js',
+    'prefs.js',
+    'api-client.js',
+    'game-view.js',
+    'game.js',
+    'analytics-bootstrap.js'
+  ]) {
+    assert.match(
+      html,
+      new RegExp(`${asset.replace('.', '\\.')}\\?v=\\d+`),
+      `missing version stamp for ${asset}`
+    );
+  }
 });
 
 test('the page activates a waiting worker at a safe point instead of stalling', () => {
@@ -140,5 +160,5 @@ test('service worker updates are versioned, clean old shell caches, and activate
 test('service worker cache version matches the current refined home shell release', () => {
   const worker = readProjectFile('service-worker.js');
 
-  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v13["']/);
+  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v14["']/);
 });

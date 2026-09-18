@@ -11,7 +11,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=14">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -550,14 +550,18 @@
       </div>
     </dialog>
 
-    <script src="game-logic.js"></script>
-    <script src="prefs.js"></script>
-    <script src="api-client.js"></script>
-    <script src="game-view.js"></script>
-    <script src="game.js"></script>
+    <!-- The ?v= query makes browsers fail fast when an older cache-first
+         service worker is still controlling the page: pre-v13 workers only
+         intercept same-path requests without a query string, so these land
+         on the network. v13+ assets are network-first and never need a bump. -->
+    <script src="game-logic.js?v=14"></script>
+    <script src="prefs.js?v=14"></script>
+    <script src="api-client.js?v=14"></script>
+    <script src="game-view.js?v=14"></script>
+    <script src="game.js?v=14"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
-    <script src="analytics-bootstrap.js"></script>
+    <script src="analytics-bootstrap.js?v=14"></script>
     <script defer src="/_vercel/insights/script.js"></script>
   </body>
 </html>

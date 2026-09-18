@@ -57,7 +57,7 @@ test('A+ shell exposes mobile, privacy, dialog, and phase-state contracts', () =
   assert.match(controller, /tap-to-acknowledgement/);
   assert.match(controller, /api-latency/);
   assert.match(html, /aria-modal=["']true["']/i);
-  assert.match(html, /<script[^>]+src=["']analytics-bootstrap\.js["']/i);
+  assert.match(html, /<script[^>]+src=["']analytics-bootstrap\.js(?:\?[^"']*)?["']/i);
   assert.match(html, /<script\s+defer\s+src=["']\/_vercel\/insights\/script\.js["']><\/script>/i);
   assert.doesNotMatch(html, /googletagmanager|google-analytics|gtag\s*\(/i);
 });
