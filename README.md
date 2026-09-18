@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="favicon.svg" width="64" height="64" alt="Spy in the Room">
+<img src="assets/app-icon-192.png" width="64" height="64" alt="Spy in the Room">
 
 # Spy in the Room
 

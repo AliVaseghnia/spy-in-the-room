@@ -82,22 +82,17 @@
     var players = snapshot && Array.isArray(snapshot.players) ? snapshot.players : [];
     var revealIndex = snapshot ? Number(snapshot.revealIndex) || 0 : 0;
     var player = snapshot && snapshot.currentPlayer ? snapshot.currentPlayer : players[revealIndex];
-    var playerIndex = player ? players.findIndex(function (candidate) {
-      return candidate.id === player.id;
-    }) : revealIndex;
     var card = state.visibleCard;
     var cardPlayerId = card && card.player && card.player.id;
     var customMode = snapshot && snapshot.secretMode === 'custom';
     var isCardVisible = Boolean(player && card && cardPlayerId === player.id);
 
     if (!player) return;
-    if (playerIndex < 0) playerIndex = revealIndex;
 
     refs.revealName.textContent = player.displayName;
     if (refs.revealAvatar) {
-      var avatar = ctx.avatarFor(playerIndex);
-      refs.revealAvatar.textContent = avatar.emoji;
-      refs.revealAvatar.style.setProperty('--avatar-color', avatar.color);
+      refs.revealAvatar.src = 'assets/app-icon-192.png';
+      refs.revealAvatar.alt = '';
     }
     if (refs.revealProgress) {
       refs.revealProgress.textContent = 'Card ' + Math.min(revealIndex + 1, players.length || 1) + ' of ' + (players.length || 1);

@@ -13,7 +13,7 @@ function readProjectJson(relativePath) {
   return JSON.parse(readProjectFile(relativePath));
 }
 
-test('manifest describes an installable standalone shell with only inline icons', () => {
+test('manifest describes an installable standalone shell with local app icons', () => {
   const manifest = readProjectJson('manifest.webmanifest');
 
   assert.equal(manifest.name, 'Spy in the Room');
@@ -26,9 +26,16 @@ test('manifest describes an installable standalone shell with only inline icons'
   assert.ok(Array.isArray(manifest.icons));
   assert.ok(manifest.icons.length >= 2, 'the manifest should provide small and large install icons');
 
+  assert.deepEqual(
+    manifest.icons.map((icon) => ({ src: icon.src, sizes: icon.sizes, type: icon.type })),
+    [
+      { src: 'assets/app-icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'assets/app-icon-512.png', sizes: '512x512', type: 'image/png' }
+    ]
+  );
   for (const icon of manifest.icons) {
-    assert.match(icon.src, /^data:image\/svg\+xml,/i, 'icons must be self-contained data URLs');
-    assert.match(icon.type, /^image\/svg\+xml$/i);
+    assert.match(icon.src, /^assets\/app-icon-(?:192|512)\.png$/i);
+    assert.match(icon.type, /^image\/png$/i);
     assert.match(icon.sizes, /^\d+x\d+$/);
     assert.doesNotMatch(icon.src, /https?:\/\//i, 'icons must not fetch remote assets');
   }
@@ -68,6 +75,10 @@ test('service worker precaches only the versioned static shell and never runtime
   assert.ok(precacheStart >= 0 && precacheEnd > precacheStart, 'the worker must declare an explicit precache list');
   const precacheBlock = worker.slice(precacheStart, precacheEnd);
   for (const asset of [
+    '/assets/app-icon-64.png',
+    '/assets/app-icon-180.png',
+    '/assets/app-icon-192.png',
+    '/assets/app-icon-512.png',
     '/',
     '/index.html',
     '/styles.css',
@@ -157,8 +168,8 @@ test('service worker updates are versioned, clean old shell caches, and activate
   assert.match(worker, /event\.waitUntil\s*\(/g);
 });
 
-test('service worker cache version matches the current refined home shell release', () => {
+test('service worker cache version matches the current app icon shell release', () => {
   const worker = readProjectFile('service-worker.js');
 
-  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v14["']/);
+  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v15["']/);
 });

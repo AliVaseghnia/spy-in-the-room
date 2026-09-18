@@ -187,16 +187,12 @@ h2 {
 }
 
 .brand-mark {
-  display: grid;
+  display: block;
   width: 2rem;
   height: 2rem;
-  place-items: center;
-  border: 1px solid var(--amber);
+  border: 0;
   border-radius: var(--radius-small);
-  color: var(--amber);
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 700;
+  object-fit: cover;
 }
 
 .brand-name {
@@ -579,6 +575,14 @@ fieldset {
   height: 4.25rem;
   border-width: 2px;
   font-size: 2.25rem;
+}
+
+.avatar-app-icon {
+  display: block;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  object-fit: cover;
 }
 
 /* ---------- 5. Phase views & cards ---------- */

@@ -4,21 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#10161e">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/app-icon-64.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/app-icon-180.png">
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="description" content="Pass one phone around the room. Everyone gets the secret except the spies.">
     <meta property="og:title" content="Spy in the Room — Pass the phone">
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=14">
+    <link rel="stylesheet" href="styles.css?v=15">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
     <div id="app" class="app-shell">
       <header class="site-header">
         <a class="brand" href="./" aria-label="Spy in the Room home">
-          <span class="brand-mark" aria-hidden="true">S</span>
+          <img class="brand-mark" src="assets/app-icon-64.png" alt="" aria-hidden="true">
           <span class="brand-name">SPY IN THE ROOM</span>
         </a>
 
@@ -183,7 +184,7 @@
 
           <section id="reveal-view" class="phase-view action-card" data-phase="reveal" aria-labelledby="reveal-title" hidden>
             <div class="handoff">
-              <span id="reveal-avatar" class="avatar avatar-large" aria-hidden="true">🦊</span>
+              <img id="reveal-avatar" class="avatar avatar-large avatar-app-icon" src="assets/app-icon-192.png" alt="" aria-hidden="true">
               <p class="section-kicker" id="reveal-progress">Card 1 of 5</p>
               <h2 id="reveal-title">Pass the phone to <span id="reveal-name">Player 1</span></h2>
               <p>Only the named player should look at this card.</p>
@@ -569,14 +570,14 @@
          service worker is still controlling the page: pre-v13 workers only
          intercept same-path requests without a query string, so these land
          on the network. v13+ assets are network-first and never need a bump. -->
-    <script src="game-logic.js?v=14"></script>
-    <script src="prefs.js?v=14"></script>
-    <script src="api-client.js?v=14"></script>
-    <script src="game-view.js?v=14"></script>
-    <script src="game.js?v=14"></script>
+    <script src="game-logic.js?v=15"></script>
+    <script src="prefs.js?v=15"></script>
+    <script src="api-client.js?v=15"></script>
+    <script src="game-view.js?v=15"></script>
+    <script src="game.js?v=15"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
-    <script src="analytics-bootstrap.js?v=14"></script>
+    <script src="analytics-bootstrap.js?v=15"></script>
     <script defer src="/_vercel/insights/script.js"></script>
   </body>
 </html>

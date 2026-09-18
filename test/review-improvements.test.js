@@ -32,10 +32,10 @@ test('the shell has a strict same-origin policy and a protected cleanup schedule
 test('public shell assets include the favicon and extracted analytics/offline behavior', () => {
   const html = readProjectFile('index.html');
 
-  for (const asset of ['favicon.svg', 'analytics-bootstrap.js', 'offline.css', 'offline.js']) {
+  for (const asset of ['assets/app-icon-64.png', 'analytics-bootstrap.js', 'offline.css', 'offline.js']) {
     assert.equal(fs.existsSync(path.join(PROJECT_ROOT, asset)), true, `missing shell asset: ${asset}`);
   }
-  assert.match(html, /rel=["']icon["'][^>]+href=["']favicon\.svg["']/i);
+  assert.match(html, /rel=["']icon["'][^>]+href=["']assets\/app-icon-64\.png["']/i);
   assert.match(html, /property=["']og:title["']/i);
   assert.match(html, /name=["']twitter:card["']/i);
   assert.doesNotMatch(html, /<script\s*>\s*window\.va/i);
