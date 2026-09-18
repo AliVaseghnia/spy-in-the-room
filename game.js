@@ -1970,7 +1970,7 @@
     state.prefs.spice = Boolean(refs.spiceToggle && refs.spiceToggle.checked);
     if (prefs && typeof prefs.saveFlags === 'function') prefs.saveFlags({ spice: state.prefs.spice });
     setAnnouncement(state.prefs.spice
-      ? 'Chaos mode on. One public twist per round.'
+      ? 'Chaos mode on. One extra public rule per round.'
       : 'Chaos mode off.');
     render();
   }

@@ -910,6 +910,7 @@ fieldset {
 }
 
 .spice-option {
+  position: relative;
   display: flex;
   min-height: 4rem;
   align-items: center;
@@ -918,7 +919,6 @@ fieldset {
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
   background: rgba(255, 255, 255, 0.018);
-  cursor: pointer;
 }
 
 .spice-option:has(input:checked) {
@@ -934,18 +934,85 @@ fieldset {
   accent-color: var(--amber);
 }
 
-.spice-option span {
+.spice-option-copy {
   display: grid;
+  flex: 1 1 auto;
   gap: 0.125rem;
+  min-width: 0;
+  cursor: pointer;
 }
 
-.spice-option strong {
+.spice-option-copy strong {
   font-size: 0.9rem;
 }
 
-.spice-option small {
+.spice-option-copy small {
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+.help-tip {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: 0.5rem;
+}
+
+.help-tip summary {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-tip summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-tip summary::marker {
+  content: '';
+}
+
+.help-tip summary:hover,
+.help-tip[open] summary {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(239, 179, 109, 0.08);
+}
+
+.help-tip-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  z-index: 6;
+  width: min(18rem, calc(100vw - 2rem));
+  padding: 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  background: var(--surface-raised);
+  box-shadow: 0 0.75rem 2rem rgba(5, 8, 12, 0.38);
+}
+
+.help-tip-panel strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+  font-size: 0.8125rem;
+}
+
+.help-tip-panel p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
 /* ---------- 7. Reveal ---------- */
@@ -1962,17 +2029,27 @@ fieldset {
 
 .toggle-option {
   display: flex;
-  min-height: 3rem;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
+  min-height: 3rem;
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
   color: var(--text);
+}
+
+.toggle-option-control {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  color: var(--text);
   cursor: pointer;
 }
 
-.toggle-option span {
+.toggle-option-control span {
   font-size: 0.9rem;
 }
 

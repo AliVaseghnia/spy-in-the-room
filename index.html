@@ -168,13 +168,20 @@
                 </div>
               </fieldset>
 
-              <label class="spice-option" for="spice-toggle">
-                <input id="spice-toggle" type="checkbox">
-                <span>
+              <div class="spice-option">
+                <input id="spice-toggle" type="checkbox" aria-describedby="chaos-mode-summary">
+                <label class="spice-option-copy" for="spice-toggle">
                   <strong>Chaos mode</strong>
-                  <small>One public twist per round. Opt in, opt out.</small>
-                </span>
-              </label>
+                  <small id="chaos-mode-summary">Adds one extra public rule per round.</small>
+                </label>
+                <details class="help-tip">
+                  <summary title="What is Chaos mode?" aria-label="What is Chaos mode?"><span aria-hidden="true">i</span></summary>
+                  <div class="help-tip-panel">
+                    <strong>Chaos mode</strong>
+                    <p>Each round gets one extra public rule, such as answering in three words or avoiding “yes” and “no.” Everyone can see it.</p>
+                  </div>
+                </details>
+              </div>
             </form>
 
             <div class="sticky-action">
@@ -239,7 +246,7 @@
               <div class="round-intel">
                 <p id="round-intel" class="intel-line">1 spy among 5</p>
                 <p id="twist-strip" class="twist-strip" hidden>
-                  <span class="twist-tag">Twist</span>
+                  <span class="twist-tag">Chaos rule</span>
                   <span id="twist-text"></span>
                 </p>
               </div>
@@ -495,17 +502,28 @@
     <dialog id="settings-dialog" class="modal settings-modal" aria-modal="true" aria-labelledby="settings-title" hidden>
       <div class="inline-panel">
         <p class="section-kicker">Table settings</p>
-        <h3 id="settings-title">Sound &amp; haptics</h3>
+        <h3 id="settings-title">Sound &amp; vibration</h3>
         <p>Text and visuals still do all the talking. These cues are backup.</p>
         <div class="settings-list">
-          <label class="toggle-option" for="sound-toggle">
-            <input id="sound-toggle" type="checkbox">
-            <span>Sound</span>
-          </label>
-          <label class="toggle-option" for="haptics-toggle">
-            <input id="haptics-toggle" type="checkbox">
-            <span>Haptics when supported</span>
-          </label>
+          <div class="toggle-option">
+            <label class="toggle-option-control" for="sound-toggle">
+              <input id="sound-toggle" type="checkbox">
+              <span>Sound</span>
+            </label>
+          </div>
+          <div class="toggle-option">
+            <label class="toggle-option-control" for="haptics-toggle">
+              <input id="haptics-toggle" type="checkbox">
+              <span>Phone vibration</span>
+            </label>
+            <details class="help-tip">
+              <summary title="What is phone vibration?" aria-label="What is phone vibration?"><span aria-hidden="true">i</span></summary>
+              <div class="help-tip-panel">
+                <strong>Phone vibration</strong>
+                <p>Short vibrations for important game cues. They work only on phones that support them.</p>
+              </div>
+            </details>
+          </div>
         </div>
         <div class="settings-memory">
           <p class="field-help">This device remembers the last roster and these toggles. Nothing else is stored.</p>
@@ -573,7 +591,7 @@
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
     <script src="game-view.js?v=15"></script>
-    <script src="game.js?v=15"></script>
+    <script src="game.js?v=16"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

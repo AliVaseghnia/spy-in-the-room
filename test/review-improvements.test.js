@@ -51,6 +51,17 @@ test('home footer keeps one useful source link without decorative tagline fragme
   assert.doesNotMatch(footer, /Pass one phone|Keep it secret|aria-hidden="true">\//i);
 });
 
+test('unclear optional features expose concise contextual help', () => {
+  const html = readProjectFile('index.html');
+
+  assert.match(html, /id="spice-toggle"[^>]+aria-describedby="chaos-mode-summary"/i);
+  assert.match(html, /title="What is Chaos mode\?"/i);
+  assert.match(html, /Chaos rule/);
+  assert.match(html, /Phone vibration/);
+  assert.match(html, /title="What is phone vibration\?"/i);
+  assert.doesNotMatch(html, /Haptics when supported/);
+});
+
 test('phase rendering lives in a dedicated view module instead of the controller', () => {
   const html = readProjectFile('index.html');
   const controller = readProjectFile('game.js');

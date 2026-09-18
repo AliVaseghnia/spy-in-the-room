@@ -35,7 +35,7 @@ built to feel like a game you reach for again:
   checking a classified dossier.
 - **Question deck.** A tap deals a location-agnostic question ("What is the
   loudest thing here?"). The spy can use it too; nobody stalls out.
-- **Chaos mode.** An optional public twist each round — *answers must be
+- **Chaos mode.** An optional extra public rule each round, such as *answers must be
   exactly three words*, *nobody may use the word "the"*.
 - **A round that looks alive.** A draining timer ring, spy count, urgency
   colour, and haptic/audio ticks at one minute and ten seconds.
