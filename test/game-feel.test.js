@@ -70,6 +70,12 @@ test('the setup offers a custom round length between one and sixty minutes', () 
   assert.match(controller, /CUSTOM_TIMER_MAX_MINUTES\s*=\s*60/);
   assert.match(validation, /MIN_TIMER_SECONDS\s*=\s*60/);
   assert.match(validation, /MAX_TIMER_SECONDS\s*=\s*3600/);
+
+  // The stored constraint has to move with the API range, or production
+  // rejects every custom value while the in-memory dev store accepts it.
+  const migration = readProjectFile(path.join('database', 'migrations', '005_custom_round_length.sql'));
+  assert.match(migration, /DROP CONSTRAINT IF EXISTS games_timer_seconds_check/);
+  assert.match(migration, /CHECK \(timer_seconds BETWEEN 60 AND 3600\)/);
 });
 
 test('remembered players and cue flags are the only persisted preferences', () => {

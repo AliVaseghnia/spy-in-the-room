@@ -17,7 +17,7 @@ In production, the game API configuration path rejects missing values, including
 
 `APP_ORIGIN` is singular. Each environment accepts one exact origin value, not a list of local, Preview, and Production origins. Use the origin that actually serves that environment.
 
-Migration `003_spyfall_refinements.sql` adds the five-round limit and persisted ordered guesses and points. Migration `004_custom_secret_mode.sql` adds the explicit secret-mode marker and custom-secret round storage used by the current release. Apply both before deploying the corresponding code to a database that already has migrations 001 and 002.
+Migration `003_spyfall_refinements.sql` adds the five-round limit and persisted ordered guesses and points. Migration `004_custom_secret_mode.sql` adds the explicit secret-mode marker and custom-secret round storage used by the current release. Migration `005_custom_round_length.sql` widens the stored round-length constraint from the 3/5/8 minute presets to the 1-60 minute range the API accepts. Apply pending migrations before deploying the corresponding code to a database that already has earlier migrations.
 
 ## Database provisioning
 
