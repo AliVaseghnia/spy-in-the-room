@@ -122,6 +122,21 @@
                     <input id="timer-480" name="timerSeconds" type="radio" value="480">
                     <span><strong>8</strong> min</span>
                   </label>
+                  <label class="segment" for="timer-custom">
+                    <input id="timer-custom" name="timerSeconds" type="radio" value="custom">
+                    <span><strong>Custom</strong></span>
+                  </label>
+                </div>
+                <div id="custom-timer-field" class="custom-timer-field" hidden>
+                  <div class="custom-timer-row">
+                    <button id="custom-timer-decrease" class="step-button" type="button" aria-label="Shorter round">−</button>
+                    <label class="custom-timer-value" for="custom-timer-minutes">
+                      <input id="custom-timer-minutes" type="number" inputmode="numeric" min="1" max="60" step="1" value="10" aria-describedby="custom-timer-help">
+                      <span>min</span>
+                    </label>
+                    <button id="custom-timer-increase" class="step-button" type="button" aria-label="Longer round">+</button>
+                  </div>
+                  <p id="custom-timer-help" class="field-help">Any length from 1 to 60 minutes.</p>
                 </div>
               </fieldset>
 

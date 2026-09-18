@@ -58,6 +58,20 @@ test('the game shell exposes the pass-the-phone feel surfaces', () => {
   assert.match(view, /questionPrompt/);
 });
 
+test('the setup offers a custom round length between one and sixty minutes', () => {
+  const html = readProjectFile('index.html');
+  const controller = readProjectFile('game.js');
+  const validation = readProjectFile(path.join('server', 'validation.js'));
+
+  assert.match(html, /id="timer-custom"[^>]*value="custom"/);
+  assert.match(html, /id="custom-timer-field"[^>]*hidden/);
+  assert.match(html, /id="custom-timer-minutes"[^>]*min="1"[^>]*max="60"/);
+  assert.match(controller, /CUSTOM_TIMER_MIN_MINUTES\s*=\s*1/);
+  assert.match(controller, /CUSTOM_TIMER_MAX_MINUTES\s*=\s*60/);
+  assert.match(validation, /MIN_TIMER_SECONDS\s*=\s*60/);
+  assert.match(validation, /MAX_TIMER_SECONDS\s*=\s*3600/);
+});
+
 test('remembered players and cue flags are the only persisted preferences', () => {
   const prefs = require('../prefs.js');
   const stored = new Map();

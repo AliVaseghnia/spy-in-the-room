@@ -13,6 +13,8 @@
   }
 
   var DEFAULT_TIMER_SECONDS = 300;
+  var CUSTOM_TIMER_MIN_MINUTES = 1;
+  var CUSTOM_TIMER_MAX_MINUTES = 60;
   var MAX_PLAYERS = 12;
   var MIN_PLAYERS = 4;
   var MAX_CUSTOM_SECRET_LENGTH = 80;
@@ -135,6 +137,10 @@
       addPlayerButton: getElement('add-player-button'),
       startButton: getElement('start-button'),
       timerInputs: documentRef.querySelectorAll('[name="timerSeconds"]'),
+      customTimerField: getElement('custom-timer-field'),
+      customTimerInput: getElement('custom-timer-minutes'),
+      customTimerDecrease: getElement('custom-timer-decrease'),
+      customTimerIncrease: getElement('custom-timer-increase'),
       spiceToggle: getElement('spice-toggle'),
       settingsButton: getElement('settings-button'),
       settingsDialog: getElement('settings-dialog'),
@@ -259,6 +265,15 @@
     refs.playerEmptyState.textContent = names.length === 0
       ? 'Add 4 names to start.'
       : 'Add ' + remaining + ' more name' + (remaining === 1 ? '' : 's') + ' to start.';
+    var customTimerMinutes = readCustomTimerMinutes();
+
+    refs.customTimerField.hidden = !isCustomTimerSelected();
+    if (refs.customTimerDecrease) {
+      refs.customTimerDecrease.disabled = customTimerMinutes <= CUSTOM_TIMER_MIN_MINUTES;
+    }
+    if (refs.customTimerIncrease) {
+      refs.customTimerIncrease.disabled = customTimerMinutes >= CUSTOM_TIMER_MAX_MINUTES;
+    }
     refs.customSecretField.hidden = !customMode;
     refs.customSecretInput.required = customMode;
     if (!customMode || secretValidation.ok || !readCustomSecret()) {
@@ -332,19 +347,75 @@
     var selected = null;
 
     Array.prototype.forEach.call(inputs, function (input) {
-      if (input.checked) selected = Number(input.value);
+      if (input.checked) selected = input;
     });
-    return Number.isFinite(selected) && selected > 0
-      ? Math.floor(selected)
+    if (selected && selected.value === 'custom') return readCustomTimerMinutes() * 60;
+
+    var seconds = selected ? Number(selected.value) : NaN;
+    return Number.isFinite(seconds) && seconds > 0
+      ? Math.floor(seconds)
       : DEFAULT_TIMER_SECONDS;
   }
 
   function setTimerSelection(seconds) {
     var target = String(seconds);
+    var matched = false;
 
     Array.prototype.forEach.call(refs.timerInputs || [], function (input) {
-      input.checked = input.value === target;
+      var isMatch = input.value === target;
+      input.checked = isMatch;
+      if (isMatch) matched = true;
     });
+    if (matched) return;
+
+    setCustomTimerMinutes(Number(seconds) / 60);
+    selectCustomTimer();
+  }
+
+  function clampCustomTimerMinutes(value) {
+    var minutes = Math.round(Number(value));
+
+    if (!Number.isFinite(minutes)) minutes = DEFAULT_TIMER_SECONDS / 60;
+    return Math.min(CUSTOM_TIMER_MAX_MINUTES, Math.max(CUSTOM_TIMER_MIN_MINUTES, minutes));
+  }
+
+  function readCustomTimerMinutes() {
+    return clampCustomTimerMinutes(refs.customTimerInput && refs.customTimerInput.value);
+  }
+
+  function setCustomTimerMinutes(value) {
+    var minutes = clampCustomTimerMinutes(value);
+
+    if (refs.customTimerInput) refs.customTimerInput.value = String(minutes);
+    return minutes;
+  }
+
+  function isCustomTimerSelected() {
+    var selected = false;
+
+    Array.prototype.forEach.call(refs.timerInputs || [], function (input) {
+      if (input.checked && input.value === 'custom') selected = true;
+    });
+    return selected;
+  }
+
+  function selectCustomTimer() {
+    Array.prototype.forEach.call(refs.timerInputs || [], function (input) {
+      if (input.value === 'custom') input.checked = true;
+    });
+  }
+
+  function announceTimerSelection() {
+    setAnnouncement('Round length: ' + Math.round(readTimerSelection() / 60) + ' minutes.');
+  }
+
+  function stepCustomTimer(delta) {
+    var minutes = setCustomTimerMinutes(readCustomTimerMinutes() + delta);
+
+    selectCustomTimer();
+    setAnnouncement('Round length: ' + minutes + ' minutes.');
+    updateSetupControls();
+    render();
   }
 
   function normalizeSecretInput(value) {
@@ -2160,10 +2231,29 @@
     Array.prototype.forEach.call(refs.timerInputs || [], function (input) {
       input.addEventListener('change', function () {
         updateSetupControls();
-        setAnnouncement('Round length: ' + Math.round(Number(input.value) / 60) + ' minutes.');
+        announceTimerSelection();
         render();
       });
     });
+    if (refs.customTimerInput) {
+      refs.customTimerInput.addEventListener('input', updateSetupControls);
+      refs.customTimerInput.addEventListener('change', function () {
+        setCustomTimerMinutes(refs.customTimerInput.value);
+        announceTimerSelection();
+        updateSetupControls();
+        render();
+      });
+    }
+    if (refs.customTimerDecrease) {
+      refs.customTimerDecrease.addEventListener('click', function () {
+        stepCustomTimer(-1);
+      });
+    }
+    if (refs.customTimerIncrease) {
+      refs.customTimerIncrease.addEventListener('click', function () {
+        stepCustomTimer(1);
+      });
+    }
     refs.spiceToggle.addEventListener('change', handleSpiceChange);
     refs.secretModeDeck.addEventListener('change', handleSecretModeChange);
     refs.secretModeCustom.addEventListener('change', handleSecretModeChange);

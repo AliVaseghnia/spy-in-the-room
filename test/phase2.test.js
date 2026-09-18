@@ -269,8 +269,16 @@ test('create validation rejects invalid names and timers', () => {
     (error) => error.code === 'VALIDATION_ERROR'
   );
   assert.throws(
-    () => validateCreateRequest({ players: ['Ana', 'Bea', 'Cy', 'Dee'], timerSeconds: 301 }),
+    () => validateCreateRequest({ players: ['Ana', 'Bea', 'Cy', 'Dee'], timerSeconds: 59 }),
     (error) => error.code === 'VALIDATION_ERROR'
+  );
+  assert.throws(
+    () => validateCreateRequest({ players: ['Ana', 'Bea', 'Cy', 'Dee'], timerSeconds: 3601 }),
+    (error) => error.code === 'VALIDATION_ERROR'
+  );
+  assert.equal(
+    validateCreateRequest({ players: ['Ana', 'Bea', 'Cy', 'Dee'], timerSeconds: 420 }).timerSeconds,
+    420
   );
 });
 

@@ -12,7 +12,8 @@ const MAX_LIST_LIMIT = 100;
 const MAX_ROUND_NUMBER = 2147483647;
 const MAX_CUSTOM_SECRET_LENGTH = 80;
 const SUPPORTED_SECRET_MODES = Object.freeze(['deck', 'custom']);
-const SUPPORTED_TIMER_SECONDS = Object.freeze([180, 300, 480]);
+const MIN_TIMER_SECONDS = 60;
+const MAX_TIMER_SECONDS = 3600;
 const SUPPORTED_CARD_ACTIONS = Object.freeze(['reveal', 'hide']);
 const SUPPORTED_GAME_ACTIONS = Object.freeze([
   'end-round',
@@ -211,10 +212,13 @@ function validateCreateRequest(body) {
     throw validationError(playerResult.error, 400, { field: 'players' });
   }
 
-  if (!Number.isInteger(body.timerSeconds) || !SUPPORTED_TIMER_SECONDS.includes(body.timerSeconds)) {
-    throw validationError('Timer must be 3, 5, or 8 minutes.', 400, {
+  if (!Number.isInteger(body.timerSeconds)
+      || body.timerSeconds < MIN_TIMER_SECONDS
+      || body.timerSeconds > MAX_TIMER_SECONDS) {
+    throw validationError('Timer must be between 1 and 60 minutes.', 400, {
       field: 'timerSeconds',
-      allowed: SUPPORTED_TIMER_SECONDS
+      minSeconds: MIN_TIMER_SECONDS,
+      maxSeconds: MAX_TIMER_SECONDS
     });
   }
 
@@ -490,10 +494,8 @@ module.exports = {
   MAX_LIST_LIMIT,
   MAX_ROUND_NUMBER,
   MAX_CUSTOM_SECRET_LENGTH,
-  SUPPORTED_CARD_ACTIONS,
-  SUPPORTED_GAME_ACTIONS,
-  SUPPORTED_SECRET_MODES,
-  SUPPORTED_TIMER_SECONDS,
+  MAX_TIMER_SECONDS,
+  MIN_TIMER_SECONDS,
   canonicalize,
   canonicalJson,
   contentTypeIsJson,
