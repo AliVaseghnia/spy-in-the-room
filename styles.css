@@ -293,6 +293,7 @@ h2 {
 
 .site-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding-top: 1rem;
@@ -307,6 +308,15 @@ h2 {
 
 .site-footer a:hover {
   color: var(--amber);
+}
+
+.footer-github {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer-github svg {
+  display: block;
 }
 
 /* Active play turns the page into a game board: no marketing, tight chrome. */
