@@ -290,7 +290,7 @@ h2 {
 .site-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
@@ -300,6 +300,7 @@ h2 {
 
 .site-footer a {
   color: var(--muted);
+  text-decoration: none;
 }
 
 .site-footer a:hover {
@@ -309,6 +310,7 @@ h2 {
 .footer-github {
   display: inline-flex;
   align-items: center;
+  gap: 0.45rem;
 }
 
 .footer-github svg {

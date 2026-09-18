@@ -42,6 +42,15 @@ test('public shell assets include the favicon and extracted analytics/offline be
   assert.doesNotMatch(html, /<style\b/i);
 });
 
+test('home footer keeps one useful source link without decorative tagline fragments', () => {
+  const html = readProjectFile('index.html');
+  const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/i)?.[1] || '';
+
+  assert.match(footer, /aria-label="View source on GitHub"/i);
+  assert.match(footer, /<span>Source on GitHub<\/span>/i);
+  assert.doesNotMatch(footer, /Pass one phone|Keep it secret|aria-hidden="true">\//i);
+});
+
 test('phase rendering lives in a dedicated view module instead of the controller', () => {
   const html = readProjectFile('index.html');
   const controller = readProjectFile('game.js');
