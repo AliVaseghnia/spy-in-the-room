@@ -99,6 +99,9 @@
 
   var lastRenderedPhase = null;
   var pendingAnnouncement = '';
+  var pendingServiceWorker = null;
+  var updateRequested = false;
+  var reloadingForUpdate = false;
   var refs = null;
   var skipInitialFocus = true;
 
@@ -987,6 +990,7 @@
 
     if (phase === 'round' && state.displayIntervalId === null) beginDisplayTimer();
     if (phaseChanged) focusForCurrentPhase();
+    activatePendingWorker();
     markPerformance('phase-render-' + phase);
   }
 
@@ -2036,12 +2040,55 @@
     }
   }
 
+  function safePhaseForReload() {
+    var phase = currentPhase();
+    return phase === 'setup' || phase === 'resume' || phase === 'result';
+  }
+
+  // A waiting worker is activated only at a safe table point, then the page
+  // reloads once onto the new shell. Without this, an update can sit in
+  // "waiting" until every tab closes, and the old worker keeps serving the
+  // previous stylesheet and scripts into the new HTML.
+  function activatePendingWorker() {
+    var worker = pendingServiceWorker;
+
+    if (!worker || state.mutationBusy || !safePhaseForReload()) return;
+    pendingServiceWorker = null;
+    updateRequested = true;
+    if (typeof worker.postMessage === 'function') worker.postMessage({ type: 'SKIP_WAITING' });
+  }
+
   function registerServiceWorker() {
     var navigatorRef = root && root.navigator;
+    var serviceWorker = navigatorRef && navigatorRef.serviceWorker;
 
-    if (!navigatorRef || !navigatorRef.serviceWorker
-      || typeof navigatorRef.serviceWorker.register !== 'function') return;
-    navigatorRef.serviceWorker.register('./service-worker.js', { scope: './' }).catch(function () {});
+    if (!serviceWorker || typeof serviceWorker.register !== 'function') return;
+
+    serviceWorker.register('./service-worker.js', { scope: './' }).then(function (registration) {
+      if (!registration) return;
+      if (registration.waiting && serviceWorker.controller) {
+        pendingServiceWorker = registration.waiting;
+        activatePendingWorker();
+      }
+      if (typeof registration.addEventListener !== 'function') return;
+      registration.addEventListener('updatefound', function () {
+        var installing = registration.installing;
+        if (!installing || typeof installing.addEventListener !== 'function') return;
+        installing.addEventListener('statechange', function () {
+          if (installing.state !== 'installed' || !serviceWorker.controller) return;
+          pendingServiceWorker = installing;
+          activatePendingWorker();
+        });
+      });
+    }).catch(function () {});
+
+    if (typeof serviceWorker.addEventListener === 'function') {
+      serviceWorker.addEventListener('controllerchange', function () {
+        if (!updateRequested || reloadingForUpdate) return;
+        reloadingForUpdate = true;
+        root.location.reload();
+      });
+    }
   }
 
   function handleNetworkHint(isOnline) {

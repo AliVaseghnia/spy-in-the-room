@@ -2,7 +2,7 @@
 
 // Bump CACHE_NAME when any precached shell asset changes.
 const CACHE_PREFIX = 'spy-in-the-room-shell-';
-const CACHE_NAME = 'spy-in-the-room-shell-v12';
+const CACHE_NAME = 'spy-in-the-room-shell-v13';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = Object.freeze([
   '/',
@@ -61,8 +61,21 @@ async function handleNavigation(request) {
 }
 
 async function handlePrecachedAsset(request) {
-  const cachedResponse = await caches.match(request);
-  return cachedResponse || fetch(request);
+  // Assets are network-first so a stale worker can never pair an old
+  // stylesheet or script with a newer HTML shell. The precache is only an
+  // offline fallback; the game itself always requires the network.
+  try {
+    return await fetch(request);
+  } catch {
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || new Response(
+      'No connection. Reconnect and try again.',
+      {
+        status: 503,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      }
+    );
+  }
 }
 
 self.addEventListener('install', (event) => {

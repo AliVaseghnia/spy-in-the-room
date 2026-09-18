@@ -100,6 +100,24 @@ test('service worker precaches only the versioned static shell and never runtime
   assert.match(worker, /caches\.match\(OFFLINE_URL\)/);
   assert.doesNotMatch(worker, /cache\.put\s*\(/i, 'runtime responses must not be added to Cache Storage');
   assert.doesNotMatch(worker, /cache\.add\s*\(\s*request/i, 'request-dependent caching would risk private responses');
+
+  // Assets are network-first. A stale worker must never pair an old script or
+  // stylesheet with a freshly deployed HTML shell; the cache is a fallback.
+  assert.match(
+    worker,
+    /async function handlePrecachedAsset[\s\S]*?await fetch\(request\)[\s\S]*?caches\.match\(request\)/
+  );
+});
+
+test('the page activates a waiting worker at a safe point instead of stalling', () => {
+  const controller = readProjectFile('game.js');
+
+  assert.match(controller, /function activatePendingWorker\s*\(/);
+  assert.match(controller, /function safePhaseForReload\s*\(/);
+  assert.match(controller, /addEventListener\(['"]updatefound['"]/);
+  assert.match(controller, /addEventListener\(['"]controllerchange['"]/);
+  assert.match(controller, /postMessage\(\{\s*type:\s*['"]SKIP_WAITING['"]\s*\}\)/);
+  assert.match(controller, /root\.location\.reload\(\)/);
 });
 
 test('service worker updates are versioned, clean old shell caches, and activate only explicitly', () => {
@@ -122,5 +140,5 @@ test('service worker updates are versioned, clean old shell caches, and activate
 test('service worker cache version matches the current refined home shell release', () => {
   const worker = readProjectFile('service-worker.js');
 
-  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v12["']/);
+  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v13["']/);
 });
