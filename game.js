@@ -18,19 +18,17 @@
   var MAX_PLAYERS = 12;
   var MIN_PLAYERS = 4;
   var MAX_CUSTOM_SECRET_LENGTH = 80;
-  var TAP_PEEK_MS = 400;
-  var TIMED_REVEAL_MS = 5000;
   var PHASE_LABELS = {
     setup: 'Get ready',
     resume: 'Saved games',
-    reveal: 'Peek & pass',
+    reveal: 'Reveal cards',
     round: 'Ask around',
     accuse: 'Call it',
     'spy-guess': 'One last shot',
     result: 'Reveal'
   };
   var RESUME_PHASE_LABELS = {
-    reveal: 'Peek & pass',
+    reveal: 'Reveal cards',
     round: 'Ask around',
     accuse: 'Call it',
     'spy-guess': 'One last shot',
@@ -78,16 +76,10 @@
     showReplaySecretForm: false,
     showGuessCallPanel: false,
     privacyLocked: false,
-    peeking: false,
-    cardsSeen: false,
-    timedReveal: false,
-    holdStartedAt: 0,
-    peekTimerId: null,
-    pressTimerId: null,
+    revealPending: false,
+    cardHidden: false,
     prefetchedCard: null,
     prefetchedFor: '',
-    pointerHandledAt: 0,
-    keyboardPeeking: false,
     question: null,
     twist: '',
     guessFilter: '',
@@ -155,14 +147,16 @@
       revealCard: getElement('reveal-card'),
       revealCardFace: getElement('reveal-card-face'),
       revealArt: getElement('reveal-art'),
-      revealName: getElement('reveal-name'),
-      revealAvatar: getElement('reveal-avatar'),
+      revealTitle: getElement('reveal-title'),
       revealProgress: getElement('reveal-progress'),
+      revealSteps: documentRef.querySelectorAll('[data-reveal-step]'),
+      revealInstruction: getElement('reveal-instruction'),
       revealLabel: getElement('reveal-label'),
       revealSecret: getElement('reveal-secret'),
       revealHint: getElement('reveal-hint'),
       revealActionLabel: getElement('reveal-action-label'),
-      holdNote: getElement('hold-note'),
+      revealNote: getElement('reveal-note'),
+      revealAgain: getElement('reveal-again'),
       privacyCover: getElement('privacy-cover'),
       revealAction: getElement('reveal-action'),
       roundView: getElement('round-view'),
@@ -853,17 +847,20 @@
 
   function clearVisibleCard() {
     state.visibleCard = null;
+    state.revealPending = false;
     if (!refs || !refs.revealSecret) return;
     refs.revealSecret.textContent = '';
-    refs.revealLabel.textContent = 'Your card is ready';
-    refs.revealHint.textContent = 'Card hidden. Pass the phone on.';
-    if (refs.revealActionLabel) refs.revealActionLabel.textContent = 'Hold to reveal';
+    refs.revealLabel.textContent = 'Private card';
+    refs.revealHint.textContent = 'Only the named player should see this.';
+    if (refs.revealActionLabel) refs.revealActionLabel.textContent = 'Reveal card';
+    if (refs.revealNote) refs.revealNote.textContent = 'Pass the phone to the named player before revealing.';
     if (refs.revealArt) {
       refs.revealArt.src = 'assets/pass-phone.png';
       refs.revealArt.alt = '';
       refs.revealArt.removeAttribute('data-role');
     }
     refs.revealAction.removeAttribute('data-revealed');
+    refs.revealAction.removeAttribute('aria-pressed');
     refs.revealCard.removeAttribute('data-revealed');
     if (refs.privacyCover) refs.privacyCover.hidden = true;
   }
@@ -922,8 +919,14 @@
         return 'Get ready. Add 4 names to start.';
       case 'reveal':
         player = state.snapshot && state.snapshot.currentPlayer;
+        if (state.cardHidden) {
+          player = nextHandoffPlayer();
+          return player
+            ? 'Card hidden. Pass the phone to ' + player.displayName + '.'
+            : 'All cards are hidden. Start the round.';
+        }
         return player
-          ? player.displayName + '’s card is ready. Reveal it, hide it, then pass the phone.'
+          ? 'Pass the phone to ' + player.displayName + ', then reveal the card.'
           : 'Your card is ready.';
       case 'round':
         return 'The round is live. ' + logic.formatTime(getSecondsRemaining()) + ' left.';
@@ -1377,35 +1380,19 @@
     return state.snapshot && state.snapshot.currentPlayer ? state.snapshot.currentPlayer : null;
   }
 
-  function clearPeekTimer() {
-    if (state.peekTimerId === null) return;
-    if (typeof root.clearTimeout === 'function') root.clearTimeout(state.peekTimerId);
-    else clearTimeout(state.peekTimerId);
-    state.peekTimerId = null;
-  }
-
-  function clearPressTimer() {
-    if (state.pressTimerId === null) return;
-    if (typeof root.clearTimeout === 'function') root.clearTimeout(state.pressTimerId);
-    else clearTimeout(state.pressTimerId);
-    state.pressTimerId = null;
-  }
-
-  function setPressTimer(callback, delay) {
-    var setTimer = root && typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout;
-    return setTimer(callback, delay);
+  function nextHandoffPlayer() {
+    var snapshot = state.snapshot;
+    var players = snapshot && Array.isArray(snapshot.players) ? snapshot.players : [];
+    var revealIndex = snapshot ? Number(snapshot.revealIndex) || 0 : 0;
+    return players[revealIndex + 1] || null;
   }
 
   function resetHandoffFlip() {
-    clearPeekTimer();
-    clearPressTimer();
-    state.peeking = false;
-    state.timedReveal = false;
-    state.cardsSeen = false;
+    state.revealPending = false;
+    state.cardHidden = false;
+    state.privacyLocked = false;
     state.prefetchedCard = null;
     state.prefetchedFor = '';
-    state.pointerHandledAt = 0;
-    state.keyboardPeeking = false;
   }
 
   function cardMatchesHandoff(card) {
@@ -1413,8 +1400,8 @@
     return Boolean(card && player && card.player && card.player.id === player.id);
   }
 
-  // Prefetching the current handoff card keeps hold-to-reveal instant. The
-  // card still only ever exists for the player named on the handoff screen.
+  // Prefetching keeps the deliberate reveal action instant. The card still
+  // only ever exists for the player named on the handoff screen.
   function prefetchCurrentCard() {
     var snapshot = state.snapshot;
     var player = currentHandoffPlayer();
@@ -1440,20 +1427,19 @@
     });
   }
 
-  function showPeekedCard(card) {
+  function showRevealedCard(card) {
     if (!card) return;
     state.visibleCard = card;
+    state.revealPending = false;
     state.privacyLocked = false;
-    if (state.timedReveal) {
-      clearPeekTimer();
-      state.peekTimerId = (root && typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () {
-        endTimedReveal();
-      }, TIMED_REVEAL_MS);
-    }
+    state.prefetchedCard = null;
+    state.prefetchedFor = '';
+    emitCue('scan');
+    setAnnouncement('Card revealed. Read it, then hide it before passing the phone.');
     render();
   }
 
-  function fetchCardForPeek() {
+  function fetchCardForReveal() {
     var snapshot = state.snapshot;
     var player = currentHandoffPlayer();
     var generation = state.generation;
@@ -1470,104 +1456,56 @@
       if (!card || !isCurrentGeneration(generation)) return;
       if (!state.snapshot || state.snapshot.gameId !== gameId) return;
       if (!cardMatchesHandoff(card)) return;
-      state.prefetchedCard = card;
-      if (!state.peeking) return;
-      showPeekedCard(card);
+      if (!state.revealPending) return;
+      showRevealedCard(card);
     }).catch(function () {
-      if (!state.peeking) return;
-      state.peeking = false;
-      state.timedReveal = false;
-      showConnectionError(new Error('The card could not be loaded. Check the connection and hold again.'), null);
+      if (!state.revealPending) return;
+      state.revealPending = false;
+      showConnectionError(new Error('The card could not be loaded. Check the connection and try again.'), null);
     });
   }
 
-  function beginPeek(options) {
+  function beginReveal() {
     var snapshot = state.snapshot;
 
-    if (!snapshot || snapshot.phase !== 'reveal' || state.mutationBusy || state.peeking) return;
-    state.holdStartedAt = Date.now();
-    state.peeking = true;
-    state.timedReveal = Boolean(options && options.timed);
-    emitCue('scan');
+    if (!snapshot || snapshot.phase !== 'reveal' || state.mutationBusy || state.revealPending || state.cardHidden) return;
+    state.revealPending = true;
+    state.privacyLocked = false;
     if (state.prefetchedCard && cardMatchesHandoff(state.prefetchedCard)) {
-      showPeekedCard(state.prefetchedCard);
+      showRevealedCard(state.prefetchedCard);
       return;
     }
     render();
-    fetchCardForPeek();
+    fetchCardForReveal();
   }
 
-  function endPeek() {
-    var heldMs;
-    var hadCard;
-
-    if (!state.peeking || state.timedReveal) return;
-    heldMs = Date.now() - state.holdStartedAt;
-    hadCard = Boolean(state.visibleCard);
-    if (hadCard && heldMs < TAP_PEEK_MS) {
-      // A quick tap becomes a short timed reveal so assistive tech and
-      // one-handed players are not forced into a long press.
-      state.timedReveal = true;
-      showPeekedCard(state.visibleCard);
-      return;
-    }
-    state.peeking = false;
-    if (hadCard) {
-      state.cardsSeen = true;
-      state.visibleCard = null;
-      emitCue('hide');
-    }
+  function hideCardLocally() {
+    if (!state.visibleCard || state.mutationBusy) return;
+    state.visibleCard = null;
+    state.revealPending = false;
+    state.cardHidden = true;
+    state.prefetchedCard = null;
+    state.prefetchedFor = '';
+    state.privacyLocked = false;
+    emitCue('hide');
+    setAnnouncement('Card hidden. Pass the phone before continuing.');
     render();
+    focusElement(refs.revealAction);
   }
 
   function passCard() {
-    clearPeekTimer();
-    clearPressTimer();
-    state.peeking = false;
-    state.timedReveal = false;
-    state.visibleCard = null;
+    if (!state.cardHidden) return;
+    state.revealPending = false;
+    state.prefetchedCard = null;
+    state.prefetchedFor = '';
     emitCue('hide', 18);
     sendCardAction('hide');
   }
 
-  // A press on the handoff button can mean three things: peek (hold), timed
-  // reveal (tap before seeing the card), or pass (tap after seeing it).
-  function beginPress() {
-    state.pointerHandledAt = Date.now();
-    if (state.timedReveal) {
-      endTimedReveal();
-      return;
-    }
-    if (state.cardsSeen) {
-      clearPressTimer();
-      state.pressTimerId = setPressTimer(function () {
-        state.pressTimerId = null;
-        beginPeek({ timed: false });
-      }, TAP_PEEK_MS);
-      return;
-    }
-    beginPeek({ timed: false });
-  }
-
-  function releasePress() {
-    state.pointerHandledAt = Date.now();
-    if (state.pressTimerId !== null) {
-      clearPressTimer();
-      passCard();
-      return;
-    }
-    endPeek();
-  }
-
-  function endTimedReveal() {
-    clearPeekTimer();
-    state.timedReveal = false;
-    state.peeking = false;
-    if (state.visibleCard) state.cardsSeen = true;
-    state.visibleCard = null;
-    emitCue('hide');
-    render();
-    focusElement(refs.revealAction);
+  function revealCardAgain() {
+    if (!state.cardHidden || state.mutationBusy) return;
+    state.cardHidden = false;
+    beginReveal();
   }
 
   function sendCardAction(action) {
@@ -1601,7 +1539,11 @@
           return;
         }
         applySnapshot(result.data, result.meta, {
-          announcement: 'Card hidden. Pass the phone on.',
+          announcement: result.data && result.data.phase === 'reveal'
+            ? 'Card hidden. Pass the phone to ' + (result.data.currentPlayer
+              ? result.data.currentPlayer.displayName
+              : 'the next player') + '.'
+            : 'All cards are hidden. The round is ready.',
           focus: true
         });
       }
@@ -1651,12 +1593,10 @@
 
   function resetSetupFields() {
     state.roster = rememberedRoster();
-    state.cardsSeen = false;
-    state.timedReveal = false;
+    state.revealPending = false;
+    state.cardHidden = false;
     state.prefetchedCard = null;
     state.prefetchedFor = '';
-    clearPeekTimer();
-    clearPressTimer();
     if (refs.playerNameInput) refs.playerNameInput.value = '';
     setTimerSelection(DEFAULT_TIMER_SECONDS);
     refs.secretModeDeck.checked = true;
@@ -1856,18 +1796,16 @@
   }
 
   function handleRevealAction() {
-    var now = Date.now();
-
-    if (now - state.pointerHandledAt < 600) return;
-    if (state.timedReveal) {
-      endTimedReveal();
-      return;
-    }
-    if (state.cardsSeen || state.visibleCard) {
+    if (state.revealPending) return;
+    if (state.cardHidden) {
       passCard();
       return;
     }
-    beginPeek({ timed: true });
+    if (state.visibleCard) {
+      hideCardLocally();
+      return;
+    }
+    beginReveal();
   }
 
   function handleChoice(button) {
@@ -2077,10 +2015,7 @@
   function handleVisibilityChange() {
     if (documentRef.visibilityState === 'hidden') {
       if (state.visibleCard) state.privacyLocked = true;
-      clearPeekTimer();
-      clearPressTimer();
-      state.peeking = false;
-      state.timedReveal = false;
+      state.revealPending = false;
       state.prefetchedCard = null;
       state.prefetchedFor = '';
       clearVisibleCard();
@@ -2093,10 +2028,7 @@
 
   function handlePageHide() {
     if (state.visibleCard) state.privacyLocked = true;
-    clearPeekTimer();
-    clearPressTimer();
-    state.peeking = false;
-    state.timedReveal = false;
+    state.revealPending = false;
     state.prefetchedCard = null;
     state.prefetchedFor = '';
     abortPendingRequests();
@@ -2264,33 +2196,10 @@
       }
     });
     if (refs.revealAction) {
-      refs.revealAction.addEventListener('pointerdown', function (event) {
-        if (event.pointerType === 'mouse' && event.button !== 0) return;
-        beginPress();
-      });
-      refs.revealAction.addEventListener('pointerup', releasePress);
-      refs.revealAction.addEventListener('pointercancel', releasePress);
-      refs.revealAction.addEventListener('pointerleave', function () {
-        if (!state.peeking) return;
-        releasePress();
-      });
-      refs.revealAction.addEventListener('keydown', function (event) {
-        if (event.key !== ' ' && event.key !== 'Spacebar' && event.key !== 'Enter') return;
-        event.preventDefault();
-        if (state.keyboardPeeking) return;
-        state.keyboardPeeking = true;
-        beginPress();
-      });
-      refs.revealAction.addEventListener('keyup', function (event) {
-        if (event.key !== ' ' && event.key !== 'Spacebar' && event.key !== 'Enter') return;
-        event.preventDefault();
-        state.keyboardPeeking = false;
-        releasePress();
-      });
       refs.revealAction.addEventListener('click', handleRevealAction);
-      refs.revealAction.addEventListener('contextmenu', function (event) {
-        event.preventDefault();
-      });
+    }
+    if (refs.revealAgain) {
+      refs.revealAgain.addEventListener('click', revealCardAgain);
     }
     refs.drawQuestionButton.addEventListener('click', handleDrawQuestion);
     refs.shareResultButton.addEventListener('click', handleShareResult);

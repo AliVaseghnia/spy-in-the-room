@@ -2,7 +2,7 @@
 
 // Bump CACHE_NAME when any precached shell asset changes.
 const CACHE_PREFIX = 'spy-in-the-room-shell-';
-const CACHE_NAME = 'spy-in-the-room-shell-v15';
+const CACHE_NAME = 'spy-in-the-room-shell-v16';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = Object.freeze([
   '/',
