@@ -193,7 +193,11 @@
     }
     refs.revealSecret.textContent = card.isSpy
       ? 'You’re the spy.'
-      : (customMode ? 'Secret: ' : 'Location: ') + card.location;
+      : customMode
+        ? 'Secret: ' + card.location
+        : typeof card.role === 'string' && card.role.length > 0
+          ? card.location + ' — you’re ' + card.role + '.'
+          : 'Location: ' + card.location;
     refs.revealSecret.setAttribute('data-role', card.isSpy ? 'spy' : 'agent');
     refs.revealHint.textContent = card.isSpy
       ? (hasLocationBoard
@@ -389,6 +393,7 @@
     var refs = ctx.refs;
     var outcome = state.snapshot && state.snapshot.outcome || {};
     var spies = Array.isArray(outcome.spyPlayers) ? outcome.spyPlayers : [];
+    var playerRoles = Array.isArray(outcome.playerRoles) ? outcome.playerRoles : [];
     var session = outcome.session || {};
     var roundPoints = Array.isArray(outcome.roundPoints) ? outcome.roundPoints : [];
     var leaderboard = Array.isArray(session.leaderboard) ? session.leaderboard : [];
@@ -425,6 +430,29 @@
       item.appendChild(createElement(ctx, 'span', null, spy && spy.displayName ? spy.displayName : String(spy)));
       refs.resultSpies.appendChild(item);
     });
+
+    if (refs.resultRolesPanel) refs.resultRolesPanel.hidden = playerRoles.length === 0;
+    if (refs.resultRoles) {
+      clearList(refs.resultRoles);
+      playerRoles.forEach(function (entry) {
+        var player = entry && entry.player;
+        var index = players.findIndex(function (candidate) {
+          return candidate.id === (player && player.id);
+        });
+        var item = createElement(ctx, 'li', 'result-role-item');
+        var roleLabel = entry && entry.isSpy
+          ? 'Spy'
+          : entry && typeof entry.role === 'string' && entry.role.length > 0
+            ? entry.role
+            : 'No role assigned';
+
+        item.appendChild(createAvatar(ctx, index < 0 ? 0 : index));
+        item.appendChild(createElement(ctx, 'span', 'result-role-player',
+          player && player.displayName ? player.displayName : 'Player'));
+        item.appendChild(createElement(ctx, 'span', 'result-role-value', roleLabel));
+        refs.resultRoles.appendChild(item);
+      });
+    }
 
     refs.sessionScoreStatus.textContent = session.isFinal
       ? 'Five rounds down. ' + (session.winner && session.winner.length === 1

@@ -128,6 +128,13 @@ test('location board schema is additive and nullable for legacy games', () => {
   assert.match(migration, /add column if not exists\s+board_locations\s+text\[\]\s+null/i);
 });
 
+test('assignment roles use an additive nullable schema migration', () => {
+  const migration = readProjectFile('database/migrations/007_assignment_roles.sql');
+
+  assert.match(migration, /alter table\s+assignments/i);
+  assert.match(migration, /add column if not exists\s+role\s+text\s+null/i);
+});
+
 test('configuration exposes the stable shape and rejects incomplete production secrets', () => {
   const { ConfigurationError, readConfig } = require('../server/config.js');
   const localConfig = readConfig({ NODE_ENV: 'development', APP_ORIGIN: 'http://localhost:3000' });

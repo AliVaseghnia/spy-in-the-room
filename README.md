@@ -41,9 +41,9 @@ built to feel like a game you reach for again:
   colour, and haptic/audio ticks at one minute and ten seconds.
 - **Players are tokens.** Everyone gets a stable avatar and colour that
   follows them through the handoff, the vote, and the scoreboard.
-- **A result worth watching.** A stamp hits, the location and spies are
-  revealed, points animate onto a leaderboard, and the whole result can be
-  shared to the group chat.
+- **A result worth watching.** A stamp hits, the location, spy team, and
+  player roles are revealed; points animate onto a leaderboard, and the whole
+  result can be shared to the group chat.
 - **It remembers your table.** Names, cue preferences, and chaos mode are
   stored on the device. Nothing about the game itself ever is.
 
@@ -54,6 +54,8 @@ built to feel like a game you reach for again:
    your own secret.
 2. **Reveal, hide & pass.** The named player reveals their card, then hides it
    with one tap to pass the phone onward. The last hide starts the round.
+   Built-in location cards also give each non-spy a role prompt; custom
+   secrets do not. Answer in character if you like; don’t say your role outright.
    9–12 players get **two spies** who know each other.
 3. **Ask, bluff, vote.** Ask one question at a time without revealing the
    location. When the clock stops, the room names one suspect.
@@ -71,10 +73,10 @@ built to feel like a game you reach for again:
 | Rounds | 3 / 5 / 8 minute timers, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
 | Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
-| Feel | Explicit handoff cards, flip animation, timer ring, twists, avatars, audio + haptics |
+| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics |
 | Platform | Installable PWA shell, offline reconnect fallback, mobile-first responsive layout |
 | Accessibility | Full keyboard flow, live-region announcements, focus management, `prefers-reduced-motion` support |
-| Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never identify the true location or roles |
+| Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never the true location, spy flags, or roles |
 
 ## Architecture
 
@@ -160,10 +162,10 @@ Preview/Production database separation and migration order, is in
 npm test
 ```
 
-The suite is 118 tests across pure rule contracts, static browser/CSP/PWA
-contracts, and full API flows against the deterministic memory store. It runs
-without a database, network, or browser. GitHub Actions runs it on every push
-and pull request.
+The suite covers pure rule contracts, static browser/CSP/PWA contracts, and
+full API flows against the deterministic memory store. It runs without a
+database, network, or browser. GitHub Actions runs it on every push and pull
+request.
 
 Syntax checks used in CI:
 
@@ -182,9 +184,10 @@ let the daily cron call `/api/maintenance/cleanup`. Full instructions:
 
 ## Security & privacy notes
 
-- Secret assignments, the location, and the spy flags live only in the server
-  store. Snapshots are sanitized per session and card responses are
-  `Cache-Control: no-store`.
+- True locations, spy assignments, and non-spy location roles are persisted
+  in the server store. Pre-result snapshots never contain them; no-store card
+  responses contain only the current player’s assignment. Result snapshots
+  reveal roles after the round resolves.
 - The service worker caches only public shell assets. `/api/**` is never
   cached.
 - `prefs.js` is the only code that touches browser storage, and it persists

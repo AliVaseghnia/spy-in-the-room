@@ -314,6 +314,8 @@ function cardForCurrentPlayer(game) {
     location: isSpy ? null : String(field(round, 'locationName', 'location_name')),
     category: isSpy ? null : String(field(round, 'locationCategory', 'location_category'))
   };
+  const role = field(assignment, 'role', 'role');
+  if (!isSpy && typeof role === 'string' && role.length > 0) card.role = role;
   if (isSpy) {
     const partner = spyAssignments(round)
       .map((candidate) => findPlayer(players, field(candidate, 'playerId', 'player_id')))
@@ -432,9 +434,23 @@ function sanitizeGameSnapshot(record) {
     const spies = spyAssignments(round)
       .map((assignment) => findPlayer(players, field(assignment, 'playerId', 'player_id')))
       .filter(Boolean);
+    const playerRoles = assignmentList(round)
+      .map((assignment) => {
+        const player = findPlayer(players, field(assignment, 'playerId', 'player_id'));
+        if (!player) return null;
+        const isSpy = Boolean(field(assignment, 'isSpy', 'is_spy'));
+        const role = field(assignment, 'role', 'role');
+        return {
+          player,
+          isSpy,
+          role: isSpy || typeof role !== 'string' || role.length === 0 ? null : role
+        };
+      })
+      .filter(Boolean);
     if (location !== undefined && location !== null) outcome.location = String(location);
     if (category !== undefined && category !== null) outcome.category = String(category);
     if (spies.length > 0) outcome.spyPlayers = spies;
+    if (playerRoles.some((entry) => entry.role !== null)) outcome.playerRoles = playerRoles;
     if (accusedPlayer) outcome.accusedPlayer = accusedPlayer;
     if (guess !== undefined && guess !== null) outcome.guess = String(guess);
     if (guesses.length > 0) outcome.guesses = guesses;
@@ -558,9 +574,10 @@ function buildRoundRecord({
     reason: null,
     startedAt,
     completedAt: null,
-    assignments: players.map((player) => ({
+    assignments: players.map((player, index) => ({
       playerId: player.id,
-      isSpy: dealt.spies.includes(player.displayName)
+      isSpy: dealt.spies.includes(player.displayName),
+      role: dealt.cards[index].role || null
     }))
   };
 }
@@ -590,9 +607,10 @@ function buildGameRecord({
     seat,
     displayName
   }));
-  const assignments = playerRecords.map((player) => ({
+  const assignments = playerRecords.map((player, index) => ({
     playerId: player.id,
-    isSpy: dealt.spies.includes(player.displayName)
+    isSpy: dealt.spies.includes(player.displayName),
+    role: dealt.cards[index].role || null
   }));
 
   return {

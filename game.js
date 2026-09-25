@@ -208,6 +208,8 @@
       resultSecretLabel: getElement('result-secret-label'),
       resultLocation: getElement('result-location'),
       resultSpies: getElement('result-spies'),
+      resultRolesPanel: getElement('result-player-roles-panel'),
+      resultRoles: getElement('result-player-roles'),
       sessionScoreStatus: getElement('session-score-status'),
       roundPointsList: getElement('round-points-list'),
       scoreboardList: getElement('scoreboard-list'),

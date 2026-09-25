@@ -141,6 +141,70 @@ function spyRevealContext(secretMode, partner, locationBoard) {
   };
 }
 
+function roleRevealContext(role) {
+  const context = spyRevealContext('deck', false, ['Campground']);
+  context.state.visibleCard = {
+    player: context.state.snapshot.currentPlayer,
+    isSpy: false,
+    location: 'Campground',
+    category: 'Outdoors',
+    role
+  };
+  return context;
+}
+
+function resultContext(playerRoles) {
+  const players = [
+    { id: 'player-1', displayName: 'Ana' },
+    { id: 'player-2', displayName: 'Bea' }
+  ];
+  const refs = {
+    resultTitle: node('h2'),
+    resultCopy: node('p'),
+    resultStamp: node('div'),
+    resultStampLabel: node('span'),
+    resultSecretLabel: node('dt'),
+    resultLocation: node('dd'),
+    resultSpies: node('ul'),
+    resultRolesPanel: node('div'),
+    resultRoles: node('ul'),
+    sessionScoreStatus: node('p'),
+    resultProgress: node('p'),
+    roundPointsList: node('ul'),
+    scoreboardList: node('ul'),
+    replayButton: node('button'),
+    shareResultButton: node('button'),
+    replaySecretPanel: node('div'),
+    replaySecretRound: node('span'),
+    replaySecretInput: node('input'),
+    replaySecretSubmit: node('button'),
+    replaySecretCancel: node('button'),
+    historyList: node('ul')
+  };
+  const outcome = {
+    winner: 'room',
+    reason: 'wrong-guess',
+    location: 'Campground',
+    spyPlayers: [players[1]],
+    roundPoints: players.map((player) => ({ player, points: 1 })),
+    session: { isFinal: false, roundsCompleted: 1, roundsTotal: 5, leaderboard: [] }
+  };
+  if (playerRoles) outcome.playerRoles = playerRoles;
+  return {
+    refs,
+    state: {
+      snapshot: { players, secretMode: 'deck', roundNumber: 1, outcome },
+      mutationBusy: false,
+      showReplaySecretForm: false,
+      history: []
+    },
+    documentRef: { createElement: node },
+    avatarFor(index) {
+      return { emoji: String(index), color: '#123456' };
+    }
+  };
+}
+
 test('round view shows the public board in a collapsed, alphabetical list', () => {
   const context = roundContext();
 
@@ -213,4 +277,37 @@ test('spy card points to a board only when the game has one', () => {
   const customSpy = spyRevealContext('custom', false, null);
   view.renderReveal(customSpy);
   assert.doesNotMatch(customSpy.refs.revealHint.textContent, /location is on the board/);
+});
+
+test('non-spy reveal card pairs its location with the assigned role', () => {
+  const context = roleRevealContext('the park ranger');
+
+  view.renderReveal(context);
+
+  assert.equal(context.refs.revealSecret.textContent, 'Campground — you’re the park ranger.');
+});
+
+test('result lists each revealed player role beside its avatar and hides legacy role data', () => {
+  const context = resultContext();
+  const [ana, bea] = context.state.snapshot.players;
+  context.state.snapshot.outcome.playerRoles = [
+    { player: ana, isSpy: false, role: 'the park ranger' },
+    { player: bea, isSpy: true, role: null }
+  ];
+
+  view.renderResult(context);
+
+  assert.equal(context.refs.resultRolesPanel.hidden, false);
+  assert.deepEqual(
+    context.refs.resultRoles.children.map((item) => item.children.map((child) => child.textContent)),
+    [
+      ['0', 'Ana', 'the park ranger'],
+      ['1', 'Bea', 'Spy']
+    ]
+  );
+
+  const legacy = resultContext();
+  view.renderResult(legacy);
+  assert.equal(legacy.refs.resultRolesPanel.hidden, true);
+  assert.equal(legacy.refs.resultRoles.children.length, 0);
 });

@@ -242,7 +242,8 @@ class MemoryStore {
       points: Array.isArray(round.points) ? clone(round.points) : [],
       assignments: (round.assignments || []).map((assignment) => ({
         playerId: String(assignment.playerId),
-        isSpy: Boolean(assignment.isSpy)
+        isSpy: Boolean(assignment.isSpy),
+        role: assignment.role == null ? null : String(assignment.role)
       }))
     }));
     this.games.set(game.id, game);
@@ -291,7 +292,8 @@ class MemoryStore {
       assignments: (record.assignments || []).map((assignment) => ({
         roundId: String(record.id),
         playerId: String(assignment.playerId),
-        isSpy: Boolean(assignment.isSpy)
+        isSpy: Boolean(assignment.isSpy),
+        role: assignment.role == null ? null : String(assignment.role)
       }))
     };
     this.rounds.set(round.id, clone(round));

@@ -87,6 +87,7 @@ function assertActiveSnapshotIsSanitized(snapshot) {
     '"category"',
     '"isSpy"',
     '"spyPlayers"',
+    '"role"',
     '"assignments"',
     '"card"',
     '"customSecret"'
@@ -639,6 +640,141 @@ test('Postgres games persist and load a nullable location board', async () => {
   assert.equal(legacy.boardLocations, null);
 });
 
+test('Postgres stores nullable assignment roles and maps legacy rows without one', async () => {
+  const calls = [];
+  const writer = new PostgresTransaction({
+    async query(sql, parameters) {
+      calls.push({ sql, parameters });
+      return { rows: [], rowCount: 1 };
+    }
+  });
+  const now = nowAt();
+  const assignments = [
+    { playerId: 'player-a', isSpy: false, role: 'the park ranger' },
+    { playerId: 'player-b', isSpy: true, role: null },
+    { playerId: 'player-c', isSpy: false }
+  ];
+  const round = {
+    id: 'round-role',
+    gameId: 'game-role',
+    roundNumber: 1,
+    secretMode: 'deck',
+    locationName: 'Campground',
+    locationCategory: 'Outdoors',
+    phase: 'reveal',
+    revealIndex: 0,
+    deadlineAt: null,
+    accusedPlayerId: null,
+    guess: null,
+    guesses: [],
+    guessOrder: [],
+    points: [],
+    winner: null,
+    reason: null,
+    startedAt: now,
+    completedAt: null,
+    assignments
+  };
+  await writer.insertGame({
+    id: 'game-role',
+    sessionId: 'session-role',
+    timerSeconds: 300,
+    secretMode: 'deck',
+    roundLimit: 5,
+    currentRoundNumber: 1,
+    currentPhase: 'reveal',
+    currentRevealIndex: 0,
+    revision: 1,
+    createdAt: now,
+    updatedAt: now,
+    boardLocations: ['Campground'],
+    players: ['player-a', 'player-b', 'player-c'].map((id, index) => ({
+      id,
+      seat: index,
+      displayName: `Player ${index + 1}`
+    })),
+    rounds: [round]
+  });
+  await writer.insertRound({
+    ...round,
+    id: 'round-role-2',
+    roundNumber: 2,
+    assignments: [{ playerId: 'player-a', isSpy: false, role: 'the trail guide' }]
+  });
+
+  const assignmentInserts = calls.filter((call) => call.sql.includes('INSERT INTO assignments'));
+  assert.equal(assignmentInserts.length, 4);
+  assert.ok(assignmentInserts.every((call) => /is_spy,\s*role/i.test(call.sql)));
+  assert.deepEqual(assignmentInserts.map((call) => call.parameters), [
+    ['round-role', 'player-a', false, 'the park ranger'],
+    ['round-role', 'player-b', true, null],
+    ['round-role', 'player-c', false, null],
+    ['round-role-2', 'player-a', false, 'the trail guide']
+  ]);
+
+  const readCalls = [];
+  const reader = new PostgresTransaction({
+    async query(sql) {
+      readCalls.push(sql);
+      if (sql.includes('FROM games')) {
+        return { rows: [{
+          id: 'game-role',
+          session_id: 'session-role',
+          timer_seconds: 300,
+          secret_mode: 'deck',
+          board_locations: ['Campground'],
+          round_limit: 5,
+          current_round_number: 1,
+          current_phase: 'reveal',
+          current_reveal_index: 0,
+          revision: 1,
+          created_at: now,
+          updated_at: now
+        }] };
+      }
+      if (sql.includes('FROM players')) {
+        return { rows: ['player-a', 'player-b', 'player-c'].map((id, index) => ({
+          id,
+          game_id: 'game-role',
+          seat: index,
+          display_name: `Player ${index + 1}`
+        })) };
+      }
+      if (sql.includes('FROM rounds')) {
+        return { rows: [{
+          id: 'round-role',
+          game_id: 'game-role',
+          round_number: 1,
+          secret_mode: 'deck',
+          location_name: 'Campground',
+          location_category: 'Outdoors',
+          phase: 'reveal',
+          reveal_index: 0,
+          guesses: [],
+          guess_order: [],
+          points: [],
+          started_at: now
+        }] };
+      }
+      if (sql.includes('FROM assignments')) {
+        return { rows: [
+          { round_id: 'round-role', player_id: 'player-a', is_spy: false, role: 'the park ranger' },
+          { round_id: 'round-role', player_id: 'player-b', is_spy: true },
+          { round_id: 'round-role', player_id: 'player-c', is_spy: false, role: null }
+        ] };
+      }
+      return { rows: [] };
+    }
+  });
+  const loaded = await reader.fetchGame('game-role', 'session-role');
+  assert.match(readCalls.find((sql) => sql.includes('FROM assignments')), /is_spy,\s*role/i);
+  assert.deepEqual(loaded.rounds[0].assignments.map((assignment) => assignment.role), [
+    'the park ranger',
+    null,
+    null
+  ]);
+});
+
 test('Postgres mutation commits expiry reconciliation before returning a stale revision conflict', async () => {
   const calls = [];
   let applied = false;
@@ -971,10 +1107,15 @@ test('reveal returns one private card, while hide advances a sanitized snapshot 
     'category',
     'isSpy',
     'location',
-    'player'
+    'player',
+    'role'
   ]);
   assert.equal(revealed.data.card.player.displayName, 'Ana');
   assert.equal(typeof revealed.data.card.isSpy, 'boolean');
+  const storedAssignment = store.games.get(created.gameId).rounds[0].assignments
+    .find((assignment) => assignment.playerId === revealed.data.card.player.id);
+  assert.equal(typeof revealed.data.card.role, 'string');
+  assert.equal(revealed.data.card.role, storedAssignment.role);
   assert.equal(JSON.stringify(revealed.data).includes('assignments'), false);
   assert.equal(store.games.get(created.gameId).revision, 1);
 
@@ -1005,6 +1146,183 @@ test('reveal returns one private card, while hide advances a sanitized snapshot 
   assert.deepEqual(replayedHide, hidden);
   assert.equal(store.games.get(created.gameId).revision, 2);
 });
+test('spy cards omit location roles', async () => {
+  const store = new MemoryStore();
+  const session = await createSession({ store, env: ENV, now: nowAt() });
+  const created = await createGame({
+    store,
+    sessionId: session.session.id,
+    players: ['Ana', 'Bea', 'Cy', 'Dee'],
+    timerSeconds: 300,
+    random: () => 0.999,
+    now: nowAt()
+  });
+
+  const revealed = await applyCardAction({
+    store,
+    sessionId: session.session.id,
+    gameId: created.gameId,
+    action: 'reveal',
+    expectedRevision: 1,
+    idempotencyKey: 'spy-card-reveal',
+    now: nowAt()
+  });
+  assert.equal(revealed.data.card.player.displayName, 'Ana');
+  assert.equal(revealed.data.card.isSpy, true);
+  assert.equal(Object.prototype.hasOwnProperty.call(revealed.data.card, 'role'), false);
+  const assignment = store.games.get(created.gameId).rounds[0].assignments
+    .find((entry) => entry.playerId === revealed.data.card.player.id);
+  assert.equal(assignment.role, null);
+});
+
+test('custom rounds persist no location roles and reveal no role field', async () => {
+  const store = new MemoryStore();
+  const session = await createSession({ store, env: ENV, now: nowAt() });
+  const created = await createGame({
+    store,
+    sessionId: session.session.id,
+    players: ['Ana', 'Bea', 'Cy', 'Dee'],
+    timerSeconds: 300,
+    secretMode: 'custom',
+    customSecret: 'Moon Base',
+    random: () => 0,
+    now: nowAt()
+  });
+  const round = store.games.get(created.gameId).rounds[0];
+
+  assert.ok(round.assignments.every((assignment) => assignment.role === null));
+  const revealed = await applyCardAction({
+    store,
+    sessionId: session.session.id,
+    gameId: created.gameId,
+    action: 'reveal',
+    expectedRevision: 1,
+    idempotencyKey: 'custom-card-reveal',
+    now: nowAt()
+  });
+  assert.equal(Object.prototype.hasOwnProperty.call(revealed.data.card, 'role'), false);
+});
+
+test('legacy rounds without role assignments still reveal cards and score normally', async () => {
+  const store = new MemoryStore();
+  const session = await createSession({ store, env: ENV, now: nowAt() });
+  const created = await createGame({
+    store,
+    sessionId: session.session.id,
+    players: ['Ana', 'Bea', 'Cy', 'Dee'],
+    timerSeconds: 300,
+    random: () => 0,
+    now: nowAt()
+  });
+  const round = store.games.get(created.gameId).rounds[0];
+  round.assignments.forEach((assignment) => delete assignment.role);
+
+  let revision = created.revision;
+  for (let index = 0; index < round.assignments.length; index += 1) {
+    const revealed = await applyCardAction({
+      store,
+      sessionId: session.session.id,
+      gameId: created.gameId,
+      action: 'reveal',
+      expectedRevision: revision,
+      idempotencyKey: `legacy-reveal-${index}`,
+      now: nowAt()
+    });
+    if (index === 0) {
+      assert.equal(revealed.data.card.isSpy, false);
+      assert.equal(Object.prototype.hasOwnProperty.call(revealed.data.card, 'role'), false);
+    }
+    const hidden = await applyCardAction({
+      store,
+      sessionId: session.session.id,
+      gameId: created.gameId,
+      action: 'hide',
+      expectedRevision: revision,
+      idempotencyKey: `legacy-hide-${index}`,
+      now: nowAt()
+    });
+    revision = hidden.meta.revision;
+  }
+
+  const activeSnapshot = await getGameSnapshot({
+    store,
+    sessionId: session.session.id,
+    gameId: created.gameId,
+    now: nowAt()
+  });
+  assertActiveSnapshotIsSanitized(activeSnapshot);
+  const ended = await applyGameAction({
+    store,
+    sessionId: session.session.id,
+    gameId: created.gameId,
+    command: { type: 'end-round' },
+    expectedRevision: revision,
+    idempotencyKey: 'legacy-end-round',
+    now: nowAt()
+  });
+  const { nonSpyId } = gameSpyAndNonSpy(store, created.gameId);
+  const result = await applyGameAction({
+    store,
+    sessionId: session.session.id,
+    gameId: created.gameId,
+    command: { type: 'accuse', playerId: nonSpyId },
+    expectedRevision: ended.meta.revision,
+    idempotencyKey: 'legacy-result',
+    now: nowAt()
+  });
+
+  assert.equal(result.data.phase, 'result');
+  assert.equal('playerRoles' in result.data.outcome, false);
+  assert.equal(result.data.outcome.roundPoints.length, 4);
+});
+
+test('roles stay private in active snapshots and are revealed only after the result', async () => {
+  const game = await createRoundGame();
+  const activeSnapshot = await getGameSnapshot({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    now: game.now
+  });
+  assertActiveSnapshotIsSanitized(activeSnapshot);
+
+  const ended = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'end-round' },
+    expectedRevision: game.revision,
+    idempotencyKey: 'roles-end-round',
+    now: game.now
+  });
+  assertActiveSnapshotIsSanitized(ended.data);
+  const { nonSpyId, round } = gameSpyAndNonSpy(game.store, game.created.gameId);
+  const result = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'accuse', playerId: nonSpyId },
+    expectedRevision: ended.meta.revision,
+    idempotencyKey: 'roles-result',
+    now: game.now
+  });
+
+  assert.equal(result.data.phase, 'result');
+  const rolesByPlayer = new Map(result.data.outcome.playerRoles.map((entry) => [
+    entry.player.id,
+    entry
+  ]));
+  assert.equal(rolesByPlayer.size, round.assignments.length);
+  for (const assignment of round.assignments) {
+    const resultEntry = rolesByPlayer.get(assignment.playerId);
+    assert.ok(resultEntry);
+    assert.equal(resultEntry.isSpy, assignment.isSpy);
+    assert.equal(resultEntry.role, assignment.isSpy ? null : assignment.role);
+    if (!assignment.isSpy) assert.equal(typeof assignment.role, 'string');
+  }
+  assert.equal(JSON.stringify(result.data).includes('"assignments"'), false);
+});
+
 
 test('hiding the final card starts the round with an absolute deadline and one revision increment', async () => {
   const startedAt = nowAt('2026-09-07T12:00:00.000Z');
@@ -1611,6 +1929,10 @@ test('replay creates a fresh reveal round while preserving the completed round',
   assert.equal(replay.meta.revision, result.meta.revision + 1);
   assertActiveSnapshotIsSanitized(replay.data);
   assert.equal(game.store.games.get(game.created.gameId).rounds.length, 2);
+  const nextRound = game.store.games.get(game.created.gameId).rounds[1];
+  assert.ok(nextRound.assignments.every((assignment) => assignment.isSpy
+    ? assignment.role === null
+    : typeof assignment.role === 'string'));
   assert.equal(previous.phase, 'result');
   assert.equal(previous.completedAt.toISOString(), '2026-09-07T12:00:00.000Z');
   assert.notEqual(

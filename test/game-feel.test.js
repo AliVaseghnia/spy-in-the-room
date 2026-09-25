@@ -120,3 +120,21 @@ test('remembered players and cue flags are the only persisted preferences', () =
     delete globalThis.localStorage;
   }
 });
+
+test('location roles appear in the rules, result markup, and project guidance', () => {
+  const html = readProjectFile('index.html');
+  const controller = readProjectFile('game.js');
+  const view = readProjectFile('game-view.js');
+  const readme = readProjectFile('README.md');
+  const rulesSpec = readProjectFile('docs/superpowers/specs/2026-09-08-spyfall-refinements.md');
+  const instruction = /Answer in character if you like; don’t say your role outright\./;
+
+  assert.match(html, instruction);
+  assert.match(readme, instruction);
+  assert.match(rulesSpec, instruction);
+  assert.match(html, /id="result-player-roles-panel"/);
+  assert.match(html, /id="result-player-roles"/);
+  assert.match(controller, /resultRolesPanel:\s*getElement\('result-player-roles-panel'\)/);
+  assert.match(controller, /resultRoles:\s*getElement\('result-player-roles'\)/);
+  assert.match(view, /outcome\.playerRoles/);
+});

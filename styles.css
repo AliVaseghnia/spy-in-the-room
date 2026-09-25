@@ -1637,7 +1637,8 @@ fieldset {
   font-weight: 600;
 }
 
-.spy-list {
+.spy-list,
+.role-list {
   display: grid;
   gap: 0.375rem;
   padding: 0;
@@ -1645,10 +1646,24 @@ fieldset {
   list-style: none;
 }
 
-.spy-list li {
+.spy-list li,
+.role-list li {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.role-list li {
+  flex-wrap: wrap;
+}
+
+.result-role-player {
+  font-weight: 600;
+}
+
+.result-role-value {
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .score-panel {

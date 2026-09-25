@@ -9,6 +9,14 @@ two-spy, accusation, and session loops explicit.
 - Four to eight players receive one spy.
 - Nine to twelve players receive two spies.
 - In a two-spy round, each spy privately sees the other spy's name.
+
+- Built-in location rounds also give each non-spy a private role prompt.
+  Prompts do not repeat until that location’s deck is exhausted; only then
+  may they cycle. Spies receive no location role.
+- Custom-secret rounds have no location roles. Before the result, general
+  snapshots omit all roles; each non-spy’s role appears only on their private
+  card. The result identifies non-spy roles and labels spies as “Spy”.
+- Answer in character if you like; don’t say your role outright.
 - The question phase is verbal. Ask one question, let the answerer ask next,
   do not ask follow-up questions, and do not immediately ask the previous
   questioner.
@@ -39,5 +47,5 @@ two-spy, accusation, and session loops explicit.
 Voting is confirmed by the group verbally because this is a shared-device
 game and there is no individual player authentication. The server still
 authoritatively checks phases, player IDs, spy assignments, guess order,
-revisions, and idempotency keys. Location-specific roles, custom decks,
-rotating leadership, online rooms, and publishing are later extensions.
+revisions, and idempotency keys. Custom decks, rotating leadership,
+online rooms, and publishing are later extensions.

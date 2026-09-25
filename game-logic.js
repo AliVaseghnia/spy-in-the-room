@@ -340,6 +340,8 @@
     var spyCount = getSpyCount(names.length);
     var shuffledNames = shuffle(names, random);
     var spies = shuffledNames.slice(0, spyCount);
+    var roleDeck = Array.isArray(location.roles) ? shuffle(location.roles, random) : [];
+    var roleIndex = 0;
     var cards = names.map(function (player) {
       var isSpy = spies.indexOf(player) !== -1;
       var card = {
@@ -348,6 +350,11 @@
         location: isSpy ? null : location.name,
         category: isSpy ? null : location.category
       };
+
+      if (!isSpy && roleDeck.length > 0) {
+        card.role = roleDeck[roleIndex % roleDeck.length];
+        roleIndex += 1;
+      }
 
       if (isSpy && spies.length > 1) {
         card.partner = spies.find(function (spy) { return spy !== player; }) || null;
