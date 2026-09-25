@@ -257,6 +257,11 @@
 
             <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
 
+            <details id="location-board" class="question-protocol location-board" hidden>
+              <summary>Possible locations</summary>
+              <ul id="location-board-list" class="location-board-grid" aria-label="Possible locations"></ul>
+            </details>
+
             <div class="question-card">
               <div class="question-card-head">
                 <p class="section-kicker">Need a question?</p>
@@ -318,7 +323,7 @@
             <div id="guess-search-field" class="guess-search-field">
               <label class="sr-only" for="guess-search-input">Search locations</label>
               <input id="guess-search-input" type="search" autocomplete="off" placeholder="Search locations" aria-describedby="guess-search-help">
-              <p id="guess-search-help" class="field-help">Tap the secret you think the room saw.</p>
+              <p id="guess-search-help" class="field-help">Search available locations to narrow the list.</p>
             </div>
 
             <ul id="guess-list" class="choice-list guess-grid" aria-label="Pick the secret">

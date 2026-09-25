@@ -169,6 +169,8 @@
       questionPrompt: getElement('question-prompt'),
       drawQuestionButton: getElement('draw-question-button'),
       roundLocationHint: getElement('round-location-hint'),
+      locationBoard: getElement('location-board'),
+      locationBoardList: getElement('location-board-list'),
       endRoundButton: getElement('end-round-button'),
       endRoundDialog: getElement('end-round-dialog'),
       confirmEndRoundButton: getElement('confirm-end-round-button'),

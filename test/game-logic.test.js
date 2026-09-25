@@ -6,6 +6,7 @@ const {
   getSpyCount,
   shuffle,
   dealRound,
+  pickBoard,
   formatTime,
   resolveAccusation,
   resolveSpyGuess,
@@ -72,6 +73,19 @@ test('dealRound assigns the configured number of spies and preserves roster orde
   assert.equal(round.cards.find(card => card.isSpy).category, null);
 });
 
+
+test('pickBoard returns a unique, sorted deterministic sample from the deck', () => {
+  const first = pickBoard(LOCATION_DECK, 24, () => 0.25);
+  const second = pickBoard(LOCATION_DECK, 24, () => 0.25);
+  const otherSample = pickBoard(LOCATION_DECK, 24, () => 0.75);
+
+  assert.equal(first.length, 24);
+  assert.equal(new Set(first).size, 24);
+  assert.ok(first.every(name => LOCATION_DECK.some(location => location.name === name)));
+  assert.deepEqual(first, first.slice().sort());
+  assert.deepEqual(second, first);
+  assert.notDeepEqual(otherSample, first);
+});
 test('formatTime pads minutes and seconds and clamps negatives', () => {
   assert.equal(formatTime(305), '05:05');
   assert.equal(formatTime(-1), '00:00');

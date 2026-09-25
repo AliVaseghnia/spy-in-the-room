@@ -11,7 +11,8 @@ const { createSession } = require('../server/session.js');
 const {
   applyCardAction,
   applyGameAction,
-  createGame
+  createGame,
+  getGameSnapshot
 } = require('../server/game-service.js');
 
 const ENV = {
@@ -24,7 +25,7 @@ function nowAt(value = '2026-09-08T12:00:00.000Z') {
   return new Date(value);
 }
 
-async function createGameWithRevealedCards(players, { secretMode, customSecret } = {}) {
+async function createGameWithRevealedCards(players, { secretMode, customSecret, random = () => 0 } = {}) {
   const store = new MemoryStore();
   const session = await createSession({ store, env: ENV, now: nowAt() });
   const created = await createGame({
@@ -34,7 +35,7 @@ async function createGameWithRevealedCards(players, { secretMode, customSecret }
     timerSeconds: 300,
     secretMode,
     customSecret,
-    random: () => 0,
+    random,
     now: nowAt()
   });
   let revision = created.revision;
@@ -99,6 +100,25 @@ function spyIds(store, gameId) {
   return round.assignments.filter((assignment) => assignment.isSpy).map((assignment) => assignment.playerId);
 }
 
+function assertPublicBoardSnapshot(snapshot, board) {
+  assert.deepEqual(snapshot.locationBoard, board);
+  assert.deepEqual(snapshot.locationBoard, snapshot.locationBoard.slice().sort());
+  if (snapshot.phase === 'result') return;
+
+  const serialized = JSON.stringify(snapshot);
+  for (const privateField of [
+    '"locationName"',
+    '"locationCategory"',
+    '"isSpy"',
+    '"spyPlayers"',
+    '"assignments"',
+    '"role"',
+    '"card"'
+  ]) {
+    assert.equal(serialized.includes(privateField), false, `snapshot leaked ${privateField}`);
+  }
+}
+
 test('two-spy deals pair each spy with the other spy and score the winning team', () => {
   const players = ['Ana', 'Bea', 'Cy', 'Dee', 'Ena', 'Fay', 'Gia', 'Hal', 'Ira'];
   const round = dealRound(players, LOCATION_DECK[0], () => 0);
@@ -117,6 +137,8 @@ test('two-spy rounds let both spies guess and either correct guess wins', async 
   const players = Array.from({ length: 9 }, (_, index) => `Player ${index + 1}`);
   const game = await createGameWithRevealedCards(players);
   const spies = spyIds(game.store, game.created.gameId);
+  const round = game.store.games.get(game.created.gameId).rounds[0];
+  const wrongGuess = game.created.locationBoard.find((location) => location !== round.locationName);
   const firstSpy = spies[0];
   const secondSpy = spies[1];
   const ended = await applyGameAction({
@@ -145,7 +167,7 @@ test('two-spy rounds let both spies guess and either correct guess wins', async 
     store: game.store,
     sessionId: game.session.session.id,
     gameId: game.created.gameId,
-    command: { type: 'guess', playerId: firstSpy, location: 'Bank' },
+    command: { type: 'guess', playerId: firstSpy, location: wrongGuess },
     expectedRevision: accused.meta.revision,
     idempotencyKey: 'refinement-two-spy-first-guess',
     now: nowAt()
@@ -157,7 +179,7 @@ test('two-spy rounds let both spies guess and either correct guess wins', async 
     store: game.store,
     sessionId: game.session.session.id,
     gameId: game.created.gameId,
-    command: { type: 'guess', playerId: secondSpy, location: LOCATION_DECK[0].name },
+    command: { type: 'guess', playerId: secondSpy, location: round.locationName },
     expectedRevision: firstGuess.meta.revision,
     idempotencyKey: 'refinement-two-spy-second-guess',
     now: nowAt()
@@ -165,6 +187,8 @@ test('two-spy rounds let both spies guess and either correct guess wins', async 
   assert.equal(final.data.phase, 'result');
   assert.equal(final.data.outcome.winner, 'spies');
   assert.equal(final.data.outcome.guesses.length, 2);
+  assert.equal(final.data.outcome.guesses[0].correct, false);
+  assert.equal(final.data.outcome.guesses[1].correct, true);
   assert.equal(final.data.outcome.guesses[1].player.id, secondSpy);
 });
 
@@ -244,12 +268,17 @@ test('custom two-spy rounds accept arbitrary normalized guesses until one is cor
 test('a session scores five non-repeating rounds and then closes the scoreboard', async () => {
   const players = ['Ana', 'Bea', 'Cy', 'Dee'];
   const game = await createGameWithRevealedCards(players);
+  const board = game.store.games.get(game.created.gameId).boardLocations;
+  assert.equal(board.length, 24);
+  assert.deepEqual(board, board.slice().sort());
+  assert.deepEqual(game.created.locationBoard, board);
   const locations = [];
 
   for (let roundNumber = 1; roundNumber <= 5; roundNumber += 1) {
     const persisted = game.store.games.get(game.created.gameId);
     const round = persisted.rounds.find((candidate) => candidate.roundNumber === persisted.currentRoundNumber);
     const nonSpyId = round.assignments.find((assignment) => !assignment.isSpy).playerId;
+    assert.ok(board.includes(round.locationName));
     locations.push(round.locationName);
 
     const ended = await applyGameAction({
@@ -287,6 +316,7 @@ test('a session scores five non-repeating rounds and then closes the scoreboard'
         random: () => 0,
         now: nowAt()
       });
+      assert.deepEqual(replay.data.locationBoard, board);
       game.revision = replay.meta.revision;
       await revealNextRound(game);
     }
@@ -306,4 +336,173 @@ test('a session scores five non-repeating rounds and then closes the scoreboard'
     }),
     (error) => error.code === 'GAME_COMPLETE' && error.status === 409
   );
+});
+
+test('the sorted public board is present in each phase without identifying the selected location', async () => {
+  const game = await createGameWithRevealedCards(['Ana', 'Bea', 'Cy', 'Dee']);
+  const record = game.store.games.get(game.created.gameId);
+  const board = record.boardLocations;
+  const roundSnapshot = await getGameSnapshot({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    now: nowAt()
+  });
+  assertPublicBoardSnapshot(roundSnapshot, board);
+
+  const ended = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'end-round' },
+    expectedRevision: game.revision,
+    idempotencyKey: 'board-private-end',
+    now: nowAt()
+  });
+  assert.equal(ended.data.phase, 'accuse');
+  assertPublicBoardSnapshot(ended.data, board);
+
+  const spyId = spyIds(game.store, game.created.gameId)[0];
+  const accused = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'accuse', playerId: spyId },
+    expectedRevision: ended.meta.revision,
+    idempotencyKey: 'board-private-accuse',
+    now: nowAt()
+  });
+  assert.equal(accused.data.phase, 'spy-guess');
+  assertPublicBoardSnapshot(accused.data, board);
+
+  const wrongGuess = board.find((location) => location !== record.rounds[0].locationName);
+  const result = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'guess', playerId: spyId, location: wrongGuess },
+    expectedRevision: accused.meta.revision,
+    idempotencyKey: 'board-private-guess',
+    now: nowAt()
+  });
+  assert.equal(result.data.phase, 'result');
+  assertPublicBoardSnapshot(result.data, board);
+});
+
+test('a board hides the true location index across deterministic random sources', async () => {
+  const indexes = [];
+  for (const value of [0.12, 0.49, 0.88]) {
+    const game = await createGameWithRevealedCards(
+      ['Ana', 'Bea', 'Cy', 'Dee'],
+      { random: () => value }
+    );
+    const record = game.store.games.get(game.created.gameId);
+    assert.deepEqual(record.boardLocations, record.boardLocations.slice().sort());
+    indexes.push(record.boardLocations.indexOf(record.rounds[0].locationName));
+  }
+  assert.ok(new Set(indexes).size > 1);
+});
+
+test('deck guesses are limited to the game board while legacy games keep the full deck', async () => {
+  const game = await createGameWithRevealedCards(['Ana', 'Bea', 'Cy', 'Dee']);
+  const record = game.store.games.get(game.created.gameId);
+  const outsideBoard = LOCATION_DECK.find((location) => !record.boardLocations.includes(location.name));
+  const spyId = spyIds(game.store, game.created.gameId)[0];
+  const ended = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'end-round' },
+    expectedRevision: game.revision,
+    idempotencyKey: 'board-guess-end',
+    now: nowAt()
+  });
+  const accused = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: { type: 'accuse', playerId: spyId },
+    expectedRevision: ended.meta.revision,
+    idempotencyKey: 'board-guess-accuse',
+    now: nowAt()
+  });
+
+  await assert.rejects(
+    applyGameAction({
+      store: game.store,
+      sessionId: game.session.session.id,
+      gameId: game.created.gameId,
+      command: { type: 'guess', playerId: spyId, location: outsideBoard.name },
+      expectedRevision: accused.meta.revision,
+      idempotencyKey: 'board-guess-rejected',
+      now: nowAt()
+    }),
+    (error) => error.status === 400 && error.code === 'VALIDATION_ERROR'
+  );
+  const accepted = await applyGameAction({
+    store: game.store,
+    sessionId: game.session.session.id,
+    gameId: game.created.gameId,
+    command: {
+      type: 'guess',
+      playerId: spyId,
+      location: record.boardLocations.find((location) => location !== record.rounds[0].locationName)
+    },
+    expectedRevision: accused.meta.revision,
+    idempotencyKey: 'board-guess-accepted',
+    now: nowAt()
+  });
+  assert.equal(accepted.data.phase, 'result');
+
+  const legacy = await createGameWithRevealedCards(['Ena', 'Fay', 'Gia', 'Hal']);
+  const legacyRecord = legacy.store.games.get(legacy.created.gameId);
+  const legacyBoard = legacyRecord.boardLocations.slice();
+  const legacySecret = legacyRecord.rounds[0].locationName;
+  legacyRecord.boardLocations = null;
+  const legacyOutsideBoard = LOCATION_DECK.find((location) => (
+    !legacyBoard.includes(location.name) && location.name !== legacySecret
+  ));
+  const legacySpyId = spyIds(legacy.store, legacy.created.gameId)[0];
+  const legacyEnd = await applyGameAction({
+    store: legacy.store,
+    sessionId: legacy.session.session.id,
+    gameId: legacy.created.gameId,
+    command: { type: 'end-round' },
+    expectedRevision: legacy.revision,
+    idempotencyKey: 'legacy-board-end',
+    now: nowAt()
+  });
+  const legacyAccused = await applyGameAction({
+    store: legacy.store,
+    sessionId: legacy.session.session.id,
+    gameId: legacy.created.gameId,
+    command: { type: 'accuse', playerId: legacySpyId },
+    expectedRevision: legacyEnd.meta.revision,
+    idempotencyKey: 'legacy-board-accuse',
+    now: nowAt()
+  });
+  const legacyResult = await applyGameAction({
+    store: legacy.store,
+    sessionId: legacy.session.session.id,
+    gameId: legacy.created.gameId,
+    command: { type: 'guess', playerId: legacySpyId, location: legacyOutsideBoard.name },
+    expectedRevision: legacyAccused.meta.revision,
+    idempotencyKey: 'legacy-board-guess',
+    now: nowAt()
+  });
+  const replay = await applyGameAction({
+    store: legacy.store,
+    sessionId: legacy.session.session.id,
+    gameId: legacy.created.gameId,
+    command: { type: 'replay' },
+    expectedRevision: legacyResult.meta.revision,
+    idempotencyKey: 'legacy-board-replay',
+    random: () => 0,
+    now: nowAt()
+  });
+  const nextRound = legacy.store.games.get(legacy.created.gameId).rounds[1];
+  assert.equal(replay.data.locationBoard, null);
+  assert.equal(nextRound.secretMode, 'deck');
+  assert.ok(LOCATION_DECK.some((location) => location.name === nextRound.locationName));
+  assert.notEqual(nextRound.locationName, legacySecret);
 });

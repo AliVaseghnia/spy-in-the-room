@@ -121,6 +121,13 @@ test('tombstone retention has a forward migration for existing databases', () =>
   );
 });
 
+test('location board schema is additive and nullable for legacy games', () => {
+  const migration = readProjectFile('database/migrations/006_location_board.sql');
+
+  assert.match(migration, /alter table\s+games/i);
+  assert.match(migration, /add column if not exists\s+board_locations\s+text\[\]\s+null/i);
+});
+
 test('configuration exposes the stable shape and rejects incomplete production secrets', () => {
   const { ConfigurationError, readConfig } = require('../server/config.js');
   const localConfig = readConfig({ NODE_ENV: 'development', APP_ORIGIN: 'http://localhost:3000' });

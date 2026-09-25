@@ -130,6 +130,17 @@
     return result;
   }
 
+  function pickBoard(deck, size, random) {
+    var locations = Array.isArray(deck) ? deck : [];
+    var boardSize = Number(size);
+    if (!Number.isFinite(boardSize) || boardSize < 0) boardSize = 0;
+
+    return shuffle(locations, random)
+      .slice(0, Math.floor(boardSize))
+      .map(function (location) { return location.name; })
+      .sort();
+  }
+
   function dealRound(names, location, random) {
     var spyCount = getSpyCount(names.length);
     var shuffledNames = shuffle(names, random);
@@ -373,6 +384,7 @@
     validatePlayers: validatePlayers,
     getSpyCount: getSpyCount,
     shuffle: shuffle,
+    pickBoard: pickBoard,
     dealRound: dealRound,
     formatTime: formatTime,
     resolveAccusation: resolveAccusation,

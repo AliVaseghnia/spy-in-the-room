@@ -223,6 +223,7 @@ class MemoryStore {
     game.createdAt = dateValue(game.createdAt);
     game.updatedAt = dateValue(game.updatedAt);
     game.secretMode = game.secretMode === 'custom' ? 'custom' : 'deck';
+    game.boardLocations = Array.isArray(game.boardLocations) ? game.boardLocations : null;
     game.players = (game.players || []).map((player) => ({
       id: String(player.id),
       seat: Number(player.seat),

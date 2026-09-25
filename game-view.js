@@ -86,6 +86,9 @@
     var card = state.visibleCard;
     var cardPlayerId = card && card.player && card.player.id;
     var customMode = snapshot && snapshot.secretMode === 'custom';
+    var hasLocationBoard = Boolean(!customMode && snapshot
+      && Array.isArray(snapshot.locationBoard)
+      && snapshot.locationBoard.length);
     var isCardVisible = Boolean(player && card && cardPlayerId === player.id);
     var isHandoffComplete = Boolean(state.cardHidden && !isCardVisible);
     var currentStep = isCardVisible || isHandoffComplete ? 'pass' : 'reveal';
@@ -193,9 +196,13 @@
       : (customMode ? 'Secret: ' : 'Location: ') + card.location;
     refs.revealSecret.setAttribute('data-role', card.isSpy ? 'spy' : 'agent');
     refs.revealHint.textContent = card.isSpy
-      ? (card.partner
-        ? 'You’re working with ' + card.partner.displayName + '. Keep it private, then hide the card.'
-        : 'Keep it private, then hide the card.')
+      ? (hasLocationBoard
+        ? card.partner
+          ? 'You’re working with ' + card.partner.displayName + '. The location is on the board — listen and narrow it down.'
+          : 'The location is on the board — listen and narrow it down.'
+        : card.partner
+          ? 'You’re working with ' + card.partner.displayName + '. Keep it private, then hide the card.'
+          : 'Keep it private, then hide the card.')
       : (customMode
         ? 'Keep it secret, then hide the card.'
         : 'Category: ' + card.category + '. Hide the card before passing the phone.');
@@ -213,12 +220,23 @@
     var snapshot = state.snapshot || {};
     var players = Array.isArray(snapshot.players) ? snapshot.players : [];
     var customMode = snapshot.secretMode === 'custom';
+    var locationBoard = Array.isArray(snapshot.locationBoard) ? snapshot.locationBoard : [];
     var question = state.question || null;
 
     refs.roundTitle.textContent = 'Ask your questions';
     refs.roundLocationHint.textContent = customMode
       ? 'Everyone else knows the secret. The spy doesn’t.'
       : 'Everyone else knows the location. The spy doesn’t.';
+    var hasLocationBoard = !customMode && locationBoard.length > 0;
+    if (refs.locationBoard) refs.locationBoard.hidden = !hasLocationBoard;
+    if (refs.locationBoardList) {
+      clearList(refs.locationBoardList);
+      if (hasLocationBoard) {
+        locationBoard.forEach(function (location) {
+          refs.locationBoardList.appendChild(createElement(ctx, 'li', 'location-board-item', location));
+        });
+      }
+    }
 
     clearList(refs.guessCallerList);
     players.forEach(function (player, index) {
@@ -284,12 +302,17 @@
   function renderGuess(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
-    var player = state.snapshot && state.snapshot.guessingPlayer;
-    var customMode = state.snapshot && state.snapshot.secretMode === 'custom';
+    var snapshot = state.snapshot || {};
+    var player = snapshot.guessingPlayer;
+    var customMode = snapshot.secretMode === 'custom';
     var filter = String(state.guessFilter || '').trim().toLowerCase();
     var deck = ctx.logic.LOCATION_DECK || [];
-    var matches = deck.filter(function (place) {
-      return place && place.name && (!filter || place.name.toLowerCase().indexOf(filter) !== -1);
+    var locations = Array.isArray(snapshot.locationBoard)
+      ? snapshot.locationBoard
+      : customMode ? [] : deck;
+    var matches = locations.filter(function (place) {
+      var name = typeof place === 'string' ? place : place && place.name;
+      return name && (!filter || name.toLowerCase().indexOf(filter) !== -1);
     });
 
     refs.guessTurnLabel.textContent = player
@@ -306,13 +329,14 @@
         refs.guessList.appendChild(empty);
       }
       matches.forEach(function (place) {
+        var name = typeof place === 'string' ? place : place.name;
         var item = createElement(ctx, 'li');
-        var button = createElement(ctx, 'button', 'choice-button', place.name);
+        var button = createElement(ctx, 'button', 'choice-button', name);
         button.type = 'button';
         button.setAttribute('data-choice-action', 'guess');
-        button.setAttribute('data-choice-value', place.name);
-        button.setAttribute('aria-label', 'Guess ' + place.name);
-        button.setAttribute('aria-pressed', String(place.name === state.pendingGuessLocation));
+        button.setAttribute('data-choice-value', name);
+        button.setAttribute('aria-label', 'Guess ' + name);
+        button.setAttribute('aria-pressed', String(name === state.pendingGuessLocation));
         button.disabled = state.mutationBusy;
         item.appendChild(button);
         refs.guessList.appendChild(item);

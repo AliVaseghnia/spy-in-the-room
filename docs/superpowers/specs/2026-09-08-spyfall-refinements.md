@@ -26,9 +26,9 @@ two-spy, accusation, and session loops explicit.
 
 ## Session rules
 
-- A session contains five rounds.
-- Locations do not repeat while unused locations remain in the deck. If the
-  deck is exhausted, the deck becomes available again.
+- A standard game samples one fixed, alphabetized board of 24 locations from the built-in deck.
+- Deck-mode rounds use an unused location from that board; if all 24 are used, the board becomes available again.
+- The board is public, and spies choose their deck-mode guess from it. Custom-secret rounds keep free-text guesses and have no board; legacy games without a stored board use the full deck.
 - After each result, the interface shows round points and the cumulative
   leaderboard before offering the next round.
 - At the end of round five, the highest cumulative score wins. Ties are shown

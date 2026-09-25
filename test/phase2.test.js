@@ -71,6 +71,7 @@ function assertActiveSnapshotIsSanitized(snapshot) {
     'currentPlayer',
     'deadlineAt',
     'gameId',
+    'locationBoard',
     'outcome',
     'phase',
     'players',
@@ -349,6 +350,8 @@ test('custom create validation normalizes and bounds the per-round secret', asyn
   assert.equal(persisted.rounds[0].secretMode, 'custom');
   assert.equal(persisted.rounds[0].locationName, 'Moon Base');
   assert.equal(persisted.rounds[0].locationCategory, 'Custom');
+  assert.equal(persisted.boardLocations, null);
+  assert.equal(snapshot.locationBoard, null);
   assertActiveSnapshotIsSanitized(snapshot);
   assert.equal(JSON.stringify(snapshot).includes('Moon Base'), false);
 });
@@ -572,6 +575,68 @@ test('Postgres game updates whitelist internal fields and map camelCase to SQL c
   assert.match(calls[0].sql, /revision = \$4/);
   assert.doesNotMatch(calls[0].sql, /currentPhase|currentRevealIndex|attackerColumn/);
   assert.deepEqual(calls[0].parameters, ['game-1', 'round', 2, 3]);
+});
+
+test('Postgres games persist and load a nullable location board', async () => {
+  const board = ['Airport', 'Bank', 'Beach'];
+  const insertCalls = [];
+  const writer = new PostgresTransaction({
+    async query(sql, parameters) {
+      insertCalls.push({ sql, parameters });
+      return { rows: [], rowCount: 1 };
+    }
+  });
+  await writer.insertGame({
+    id: 'game-board',
+    sessionId: 'session-board',
+    timerSeconds: 300,
+    secretMode: 'deck',
+    roundLimit: 5,
+    currentRoundNumber: 1,
+    currentPhase: 'reveal',
+    currentRevealIndex: 0,
+    revision: 1,
+    createdAt: nowAt(),
+    updatedAt: nowAt(),
+    boardLocations: board,
+    players: [],
+    rounds: []
+  });
+  const insert = insertCalls.find((call) => call.sql.includes('INSERT INTO games'));
+  assert.match(insert.sql, /board_locations/);
+  assert.equal(insert.parameters[4], 5);
+  assert.deepEqual(insert.parameters[5], board);
+
+  let persistedBoard = board;
+  const reader = new PostgresTransaction({
+    async query(sql) {
+      if (sql.includes('FROM games')) {
+        return {
+          rows: [{
+            id: 'game-board',
+            session_id: 'session-board',
+            timer_seconds: 300,
+            secret_mode: 'deck',
+            round_limit: 5,
+            current_round_number: 1,
+            current_phase: 'reveal',
+            current_reveal_index: 0,
+            revision: 1,
+            created_at: nowAt(),
+            updated_at: nowAt(),
+            board_locations: persistedBoard
+          }],
+          rowCount: 1
+        };
+      }
+      return { rows: [], rowCount: 0 };
+    }
+  });
+  const loaded = await reader.fetchGame('game-board', 'session-board');
+  assert.deepEqual(loaded.boardLocations, board);
+  persistedBoard = null;
+  const legacy = await reader.fetchGame('game-board', 'session-board');
+  assert.equal(legacy.boardLocations, null);
 });
 
 test('Postgres mutation commits expiry reconciliation before returning a stale revision conflict', async () => {
@@ -1056,9 +1121,9 @@ test('end-round opens accusation and a wrong accusation immediately gives spies 
 });
 
 test('a correct accusation opens one spy guess, and both guess outcomes resolve the result', async () => {
-  for (const [guess, expectedWinner, expectedReason] of [
-    ['Airport', 'spies', 'correct-guess'],
-    ['Bank', 'group', 'wrong-guess']
+  for (const [expectedWinner, expectedReason] of [
+    ['spies', 'correct-guess'],
+    ['group', 'wrong-guess']
   ]) {
     const game = await createRoundGame();
     const ended = await applyGameAction({
@@ -1067,10 +1132,13 @@ test('a correct accusation opens one spy guess, and both guess outcomes resolve 
       gameId: game.created.gameId,
       command: { type: 'end-round' },
       expectedRevision: game.revision,
-      idempotencyKey: `end-round-${guess}`,
+      idempotencyKey: `end-round-${expectedWinner}`,
       now: nowAt()
     });
     const { spyId, round } = gameSpyAndNonSpy(game.store, game.created.gameId);
+    const guess = expectedWinner === 'spies'
+      ? round.locationName
+      : game.created.locationBoard.find((location) => location !== round.locationName);
     const accused = await applyGameAction({
       store: game.store,
       sessionId: game.session.session.id,

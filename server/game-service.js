@@ -18,6 +18,8 @@ const {
   encodeRoundCursor
 } = require('./validation.js');
 
+const LOCATION_BOARD_SIZE = 24;
+
 class NotFoundError extends HttpError {
   constructor(message = 'Game not found.') {
     super(404, 'NOT_FOUND', message, {});
@@ -393,6 +395,7 @@ function sanitizeGameSnapshot(record) {
     ? findPlayer(players, accusedPlayerId)
     : null;
   const secretMode = secretModeForRound(record, round);
+  const boardLocations = field(record, 'boardLocations', 'board_locations');
   const guessingPlayer = phase === 'spy-guess'
     ? findPlayer(
       players,
@@ -451,6 +454,9 @@ function sanitizeGameSnapshot(record) {
     currentPlayer,
     revealIndex,
     secretMode,
+    locationBoard: secretMode === 'deck' && Array.isArray(boardLocations)
+      ? boardLocations.slice()
+      : null,
     deadlineAt: isoOrNull(field(record, 'currentDeadlineAt', 'current_deadline_at'))
       || isoOrNull(field(round, 'deadlineAt', 'deadline_at')),
     accusedPlayer,
@@ -492,7 +498,7 @@ function sanitizeGameSummary(record) {
   return summary;
 }
 
-function chooseLocation(random, excludedLocationNames) {
+function chooseLocation(random, excludedLocationNames, boardLocations) {
   const source = typeof random === 'function' ? random : Math.random;
   const value = Number(source());
   const bounded = Number.isFinite(value) ? Math.max(0, Math.min(0.999999999, value)) : 0;
@@ -501,8 +507,13 @@ function chooseLocation(random, excludedLocationNames) {
       ? excludedLocationNames
       : excludedLocationNames ? [excludedLocationNames] : []
   );
-  const available = SpyGameLogic.LOCATION_DECK.filter((location) => !excluded.has(location.name));
-  const deck = available.length > 0 ? available : SpyGameLogic.LOCATION_DECK;
+  const sourceDeck = Array.isArray(boardLocations)
+    ? boardLocations
+      .map((name) => SpyGameLogic.LOCATION_DECK.find((location) => location.name === name))
+      .filter(Boolean)
+    : SpyGameLogic.LOCATION_DECK;
+  const available = sourceDeck.filter((location) => !excluded.has(location.name));
+  const deck = available.length > 0 ? available : sourceDeck;
   return deck[Math.floor(bounded * deck.length)];
 }
 
@@ -521,7 +532,7 @@ function buildRoundRecord({
     : secretModeForRecord({ secretMode });
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
-    : chooseLocation(random, excludedLocationName);
+    : chooseLocation(random, excludedLocationName, field(game, 'boardLocations', 'board_locations'));
   const dealt = SpyGameLogic.dealRound(
     players.map((player) => player.displayName),
     location,
@@ -565,9 +576,12 @@ function buildGameRecord({
 }) {
   const createdAt = resolveNow(now);
   const mode = secretModeForRecord({ secretMode });
+  const boardLocations = mode === 'custom'
+    ? null
+    : SpyGameLogic.pickBoard(SpyGameLogic.LOCATION_DECK, LOCATION_BOARD_SIZE, random);
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
-    : chooseLocation(random);
+    : chooseLocation(random, null, boardLocations);
   const dealt = SpyGameLogic.dealRound(players, location, random);
   const gameId = crypto.randomUUID();
   const roundId = crypto.randomUUID();
@@ -586,6 +600,7 @@ function buildGameRecord({
     sessionId,
     timerSeconds,
     secretMode: mode,
+    boardLocations,
     roundLimit: 5,
     currentRoundNumber: 1,
     currentPhase: 'reveal',
@@ -996,14 +1011,18 @@ async function applyGameAction({
       if (input.type === 'guess') {
         if (phase !== 'spy-guess') throw invalidPhase('guess', phase, ['spy-guess']);
         const roundSecretMode = secretModeForRound(game, round);
+        const boardLocations = field(game, 'boardLocations', 'board_locations');
         const selectedLocation = roundSecretMode === 'deck'
-          ? SpyGameLogic.LOCATION_DECK.find((location) => location.name === input.location)
+          ? SpyGameLogic.LOCATION_DECK.find((location) => (
+            location.name === input.location
+            && (!Array.isArray(boardLocations) || boardLocations.includes(location.name))
+          ))
           : null;
         const guessValue = roundSecretMode === 'custom'
           ? normalizeCustomSecret(input.location, 'location')
           : selectedLocation && selectedLocation.name;
         if (!guessValue) {
-          throw validationError('The guessed location is not in the location deck.', 400, {
+          throw validationError('The guessed location is not available for this game.', 400, {
             field: 'location'
           });
         }
