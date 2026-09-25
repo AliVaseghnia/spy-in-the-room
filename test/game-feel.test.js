@@ -29,7 +29,6 @@ test('the game shell exposes the pass-the-phone feel surfaces', () => {
     'reveal-card-face',
     'reveal-action-label',
     'reveal-note',
-    'reveal-again',
     'timer-ring',
     'timer-ring-progress',
     'round-intel',
@@ -51,14 +50,10 @@ test('the game shell exposes the pass-the-phone feel surfaces', () => {
   assert.match(css, /\.leaderboard-bar/);
   assert.match(css, /\.result-stamp/);
   assert.match(controller, /function beginReveal\s*\(/);
-  assert.match(controller, /function hideCardLocally\s*\(/);
-  assert.match(controller, /function passCard\s*\(/);
   assert.match(controller, /function prefetchCurrentCard\s*\(/);
   assert.match(controller, /revealAction\.addEventListener\(['"]click['"]/);
   assert.doesNotMatch(controller, /TAP_PEEK_MS|TIMED_REVEAL_MS|timedReveal|function beginPeek\s*\(/);
   assert.match(view, /Pass the phone to/);
-  assert.match(view, /Hide card/);
-  assert.match(html, /Reveal again/);
   assert.match(controller, /function handleDrawQuestion\s*\(/);
   assert.match(controller, /function handleShareResult\s*\(/);
   assert.match(view, /leaderboard-bar/);

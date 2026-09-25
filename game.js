@@ -156,7 +156,6 @@
       revealHint: getElement('reveal-hint'),
       revealActionLabel: getElement('reveal-action-label'),
       revealNote: getElement('reveal-note'),
-      revealAgain: getElement('reveal-again'),
       privacyCover: getElement('privacy-cover'),
       revealAction: getElement('reveal-action'),
       roundView: getElement('round-view'),
@@ -922,8 +921,8 @@
         if (state.cardHidden) {
           player = nextHandoffPlayer();
           return player
-            ? 'Card hidden. Pass the phone to ' + player.displayName + '.'
-            : 'All cards are hidden. Start the round.';
+            ? 'Card hidden. Passing the phone to ' + player.displayName + '.'
+            : 'All cards are hidden. Starting the round.';
         }
         return player
           ? 'Pass the phone to ' + player.displayName + ', then reveal the card.'
@@ -1479,33 +1478,14 @@
     fetchCardForReveal();
   }
 
-  function hideCardLocally() {
-    if (!state.visibleCard || state.mutationBusy) return;
-    state.visibleCard = null;
-    state.revealPending = false;
+  function hideAndPassCard() {
+    if (!state.visibleCard || state.mutationBusy || state.cardHidden) return;
     state.cardHidden = true;
     state.prefetchedCard = null;
     state.prefetchedFor = '';
     state.privacyLocked = false;
     emitCue('hide');
-    setAnnouncement('Card hidden. Pass the phone before continuing.');
-    render();
-    focusElement(refs.revealAction);
-  }
-
-  function passCard() {
-    if (!state.cardHidden) return;
-    state.revealPending = false;
-    state.prefetchedCard = null;
-    state.prefetchedFor = '';
-    emitCue('hide', 18);
     sendCardAction('hide');
-  }
-
-  function revealCardAgain() {
-    if (!state.cardHidden || state.mutationBusy) return;
-    state.cardHidden = false;
-    beginReveal();
   }
 
   function sendCardAction(action) {
@@ -1796,13 +1776,9 @@
   }
 
   function handleRevealAction() {
-    if (state.revealPending) return;
-    if (state.cardHidden) {
-      passCard();
-      return;
-    }
+    if (state.revealPending || state.cardHidden || state.mutationBusy) return;
     if (state.visibleCard) {
-      hideCardLocally();
+      hideAndPassCard();
       return;
     }
     beginReveal();
@@ -2197,9 +2173,6 @@
     });
     if (refs.revealAction) {
       refs.revealAction.addEventListener('click', handleRevealAction);
-    }
-    if (refs.revealAgain) {
-      refs.revealAgain.addEventListener('click', revealCardAgain);
     }
     refs.drawQuestionButton.addEventListener('click', handleDrawQuestion);
     refs.shareResultButton.addEventListener('click', handleShareResult);

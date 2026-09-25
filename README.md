@@ -30,9 +30,9 @@ through the questions without ever learning where they are.
 Most pass-the-phone deductions are a timer and a text prompt. This one is
 built to feel like a game you reach for again:
 
-- **Pass, reveal, hide.** The named player reveals their card, hides it with an
-  explicit action, then passes the phone to the next player. The next action is
-  always clear, with no ambiguous press duration.
+- **Two-tap handoff.** The named player reveals their card, then one action
+  hides it and passes the phone to the next player. The final hide starts the
+  round.
 - **Question deck.** A tap deals a location-agnostic question ("What is the
   loudest thing here?"). The spy can use it too; nobody stalls out.
 - **Chaos mode.** An optional extra public rule each round, such as *answers must be
@@ -51,9 +51,9 @@ built to feel like a game you reach for again:
 
 1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Use a built-in
    location or bring your own secret.
-2. **Pass, reveal, hide.** Pass the phone to the named player. They reveal and
-   hide their role, then pass it to the next player. 9–12 players get **two
-   spies** who know each other.
+2. **Reveal, hide & pass.** The named player reveals their card, then hides it
+   with one tap to pass the phone onward. The last hide starts the round.
+   9–12 players get **two spies** who know each other.
 3. **Ask, bluff, vote.** Ask one question at a time without revealing the
    location. When the clock stops, the room names one suspect.
 4. **Last shot.** If the room accuses a spy, the spy gets one guess at the

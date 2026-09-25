@@ -1247,11 +1247,6 @@ fieldset {
   text-align: center;
 }
 
-.reveal-button + .reveal-again,
-.reveal-button + #reveal-again {
-  margin-top: 0.5rem;
-}
-
 /* ---------- 8. Round ---------- */
 
 .round-top {

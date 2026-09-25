@@ -88,22 +88,26 @@
     var customMode = snapshot && snapshot.secretMode === 'custom';
     var isCardVisible = Boolean(player && card && cardPlayerId === player.id);
     var isHandoffComplete = Boolean(state.cardHidden && !isCardVisible);
-    var currentStep = isCardVisible ? 'reveal' : isHandoffComplete ? 'pass' : 'handoff';
+    var currentStep = isCardVisible || isHandoffComplete ? 'pass' : 'reveal';
+    var hideActionLabel;
 
     if (!player) return;
+    hideActionLabel = nextPlayer
+      ? 'Hide & pass to ' + nextPlayer.displayName
+      : 'Hide & start the round';
 
     if (refs.revealTitle) {
       refs.revealTitle.textContent = isCardVisible
         ? player.displayName + '’s private card'
         : isHandoffComplete
-          ? nextPlayer ? 'Pass the phone to ' + nextPlayer.displayName : 'Cards are hidden'
+          ? nextPlayer ? 'Passing to ' + nextPlayer.displayName : 'Starting the round'
           : 'Pass the phone to ' + player.displayName;
     }
     if (refs.revealInstruction) {
       refs.revealInstruction.textContent = isHandoffComplete
         ? nextPlayer
-          ? 'Only ' + nextPlayer.displayName + ' should look at the next card.'
-          : 'Everyone can look up when the round starts.'
+          ? 'The card is hidden. Passing the phone to ' + nextPlayer.displayName + '.'
+          : 'The card is hidden. Starting the round.'
         : 'Only ' + player.displayName + ' should look at this card.';
     }
     if (refs.revealProgress) {
@@ -122,11 +126,7 @@
     if (isCardVisible) refs.revealCard.setAttribute('data-revealed', 'true');
     if (refs.revealCardFace) refs.revealCardFace.removeAttribute('data-role');
     refs.revealAction.dataset.revealing = String(Boolean(state.revealPending));
-    refs.revealAction.disabled = Boolean(state.mutationBusy || state.revealPending);
-    if (refs.revealAgain) {
-      refs.revealAgain.hidden = !isHandoffComplete;
-      refs.revealAgain.disabled = Boolean(state.mutationBusy || state.revealPending);
-    }
+    refs.revealAction.disabled = Boolean(state.mutationBusy || state.revealPending || state.cardHidden);
 
     if (state.privacyLocked) {
       if (refs.privacyCover) refs.privacyCover.hidden = false;
@@ -144,32 +144,38 @@
     if (!isCardVisible) {
       refs.revealLabel.textContent = isHandoffComplete ? 'Card hidden' : state.revealPending ? 'Preparing your card' : 'Private card';
       refs.revealSecret.textContent = isHandoffComplete
-        ? nextPlayer ? 'Pass the phone to ' + nextPlayer.displayName + '.' : 'The reveal is complete.'
+        ? nextPlayer ? 'Passing the phone to ' + nextPlayer.displayName + '…' : 'Starting the round…'
         : state.revealPending ? 'Loading your card…' : 'Reveal your card when ready.';
       refs.revealHint.textContent = isHandoffComplete
         ? nextPlayer
-          ? nextPlayer.displayName + ' can continue when they have the phone.'
-          : 'Start the round when everyone is ready.'
+          ? nextPlayer.displayName + ' can reveal when the handoff completes.'
+          : 'Everyone can look up when the round starts.'
         : 'Only ' + player.displayName + ' should see this.';
       if (refs.revealArt) {
         refs.revealArt.src = 'assets/pass-phone.png';
         refs.revealArt.alt = '';
       }
-      if (refs.revealActionLabel) refs.revealActionLabel.textContent = state.revealPending
-        ? 'Loading card…'
-        : isHandoffComplete
-          ? nextPlayer ? 'Pass to ' + nextPlayer.displayName : 'Start the round'
-          : 'I’m ' + player.displayName + ' — reveal card';
-      refs.revealAction.setAttribute('aria-label', state.revealPending
-        ? 'Loading ' + player.displayName + '’s card'
-        : isHandoffComplete
-          ? nextPlayer ? 'Pass the phone to ' + nextPlayer.displayName : 'Start the round'
+      if (refs.revealActionLabel) {
+        refs.revealActionLabel.textContent = isHandoffComplete
+          ? state.mutationBusy
+            ? nextPlayer ? 'Passing…' : 'Starting…'
+            : 'Card hidden'
+          : state.revealPending
+            ? 'Loading card…'
+            : 'I’m ' + player.displayName + ' — reveal card';
+      }
+      refs.revealAction.setAttribute('aria-label', isHandoffComplete
+        ? state.mutationBusy
+          ? nextPlayer ? 'Passing to ' + nextPlayer.displayName : 'Starting the round'
+          : 'Card hidden'
+        : state.revealPending
+          ? 'Loading ' + player.displayName + '’s card'
           : 'Reveal ' + player.displayName + '’s card');
       refs.revealAction.removeAttribute('aria-pressed');
       if (refs.revealNote) refs.revealNote.textContent = isHandoffComplete
         ? nextPlayer
-          ? 'Card hidden. Hand the phone to ' + nextPlayer.displayName + ' before continuing.'
-          : 'All cards are hidden. Start the round when everyone is ready.'
+          ? 'The handoff to ' + nextPlayer.displayName + ' is not complete yet.'
+          : 'The round is not ready until the handoff completes.'
         : state.revealPending
           ? 'Your private card is loading.'
           : 'Pass the phone to ' + player.displayName + ' before revealing.';
@@ -193,10 +199,12 @@
       : (customMode
         ? 'Keep it secret, then hide the card.'
         : 'Category: ' + card.category + '. Hide the card before passing the phone.');
-    if (refs.revealActionLabel) refs.revealActionLabel.textContent = 'Hide card';
-    refs.revealAction.setAttribute('aria-label', 'Hide ' + player.displayName + '’s card');
+    if (refs.revealActionLabel) refs.revealActionLabel.textContent = hideActionLabel;
+    refs.revealAction.setAttribute('aria-label', hideActionLabel);
     refs.revealAction.removeAttribute('aria-pressed');
-    if (refs.revealNote) refs.revealNote.textContent = 'Read the card, then hide it before passing the phone.';
+    if (refs.revealNote) refs.revealNote.textContent = nextPlayer
+      ? 'Hide the card to pass the phone to ' + nextPlayer.displayName + '.'
+      : 'Hide the card to start the round.';
   }
 
   function renderRound(ctx) {
@@ -530,8 +538,7 @@
     if (refs.cancelGuessButton) refs.cancelGuessButton.disabled = state.mutationBusy;
     if (refs.guessInput) refs.guessInput.disabled = state.mutationBusy;
     if (refs.guessSearchInput) refs.guessSearchInput.disabled = state.mutationBusy;
-    if (refs.revealAction) refs.revealAction.disabled = state.mutationBusy || state.revealPending;
-    if (refs.revealAgain) refs.revealAgain.disabled = state.mutationBusy || state.revealPending;
+    if (refs.revealAction) refs.revealAction.disabled = state.mutationBusy || state.revealPending || state.cardHidden;
     if (refs.endRoundButton) refs.endRoundButton.disabled = state.mutationBusy;
     if (refs.confirmEndRoundButton) refs.confirmEndRoundButton.disabled = state.mutationBusy;
     if (refs.cancelEndRoundButton) refs.cancelEndRoundButton.disabled = state.mutationBusy;
