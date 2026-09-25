@@ -9,264 +9,264 @@
   : typeof globalThis !== 'undefined' ? globalThis : this, function () {
   var LOCATION_DECK = [
     { name: 'Airport', category: 'Travel', roles: [
-      'the boarding caller', 'the gate agent', 'the baggage sleuth',
-      'the runway watcher', 'the window-seat fan', 'the flight attendant', 'the nervous flyer'
+      'the gate agent', 'the baggage handler', 'the flight attendant',
+      'the runway marshal', 'the one who missed their flight', 'the pilot with two maps', 'the passenger with three bags'
     ] },
     { name: 'Bank', category: 'Workplaces', roles: [
-      'the teller', 'the vault keeper', 'the coin counter',
-      'the loan officer', 'the savings coach', 'the receipt saver', 'the budget planner'
+      'the teller', 'the vault keeper', 'the loan officer',
+      'the coin counter', 'the saver with a sock stash', 'the one who lost a debit card', 'the clerk with a jar of coins'
     ] },
     { name: 'Beach', category: 'Outdoors', roles: [
-      'the tide watcher', 'the shell collector', 'the lifeguard',
-      'the sandcastle architect', 'the sunhat expert', 'the wave counter', 'the sunscreen captain'
+      'the lifeguard', 'the surf instructor', 'the shell collector',
+      'the kite flyer', 'the swimmer who forgot a towel', 'the one with a sandy sandwich', 'the castle builder with a moat'
     ] },
     { name: 'Casino', category: 'Entertainment', roles: [
-      'the card dealer', 'the dice roller', 'the lucky charm',
-      'the chip stacker', 'the roulette watcher', 'the magician', 'the scorekeeper'
+      'the card dealer', 'the roulette croupier', 'the dice roller',
+      'the chip counter', 'the dealer with lucky socks', 'the one who bet on a snack', 'the guest who dropped a chip'
     ] },
     { name: 'Circus', category: 'Entertainment', roles: [
-      'the ringmaster', 'the tightrope walker', 'the clown’s assistant',
-      'the juggling coach', 'the costume tailor', 'the trapeze artist', 'the ticket taker'
+      'the ringmaster', 'the trapeze artist', 'the juggling coach',
+      'the costume tailor', 'the clown who brought two hats', 'the acrobat with a squeaky shoe', 'the one who juggled the tickets'
     ] },
     { name: 'Construction site', category: 'Workplaces', roles: [
-      'the safety inspector', 'the blueprint reader', 'the crane operator',
-      'the brick layer', 'the hard-hat stylist', 'the tool librarian', 'the lunch bell ringer'
+      'the safety inspector', 'the crane operator', 'the bricklayer',
+      'the blueprint reader', 'the builder with a wonky helmet', 'the one who dropped a lunchbox', 'the worker who mixed up plans'
     ] },
     { name: 'Cruise ship', category: 'Travel', roles: [
-      'the deck officer', 'the sea-sick singer', 'the captain’s helper',
-      'the buffet scout', 'the wave watcher', 'the cabin steward', 'the sunset photographer'
+      'the deck officer', 'the cabin steward', 'the ship cook',
+      'the lifeboat checker', 'the sailor who packed a snorkel', 'the guest who lost a sock', 'the captain with a paper map'
     ] },
     { name: 'Embassy', category: 'Workplaces', roles: [
-      'the translator', 'the cultural attaché', 'the protocol guide',
-      'the passport checker', 'the welcome host', 'the language tutor', 'the meeting note-taker'
+      'the translator', 'the protocol officer', 'the cultural attaché',
+      'the passport clerk', 'the envoy who mixed up flags', 'the guest with two dictionaries', 'the one who forgot the speech'
     ] },
     { name: 'Fire station', category: 'Services', roles: [
-      'the fire captain', 'the alarm listener', 'the rescue planner',
-      'the engine checker', 'the hose expert', 'the safety teacher', 'the ladder climber'
+      'the fire captain', 'the dispatcher', 'the engine mechanic',
+      'the hose handler', 'the firefighter in squeaky boots', 'the rookie who lost a helmet', 'the one who packed extra snacks'
     ] },
     { name: 'Hospital', category: 'Services', roles: [
-      'the night nurse', 'the x-ray reader', 'the bandage artist',
-      'the care coordinator', 'the calm visitor', 'the chart checker', 'the snack cart scout'
+      'the night nurse', 'the x-ray tech', 'the care coordinator',
+      'the bandage artist', 'the nurse with star stickers', 'the doctor who tells dad jokes', 'the visitor with a huge bouquet'
     ] },
     { name: 'Hotel', category: 'Travel', roles: [
-      'the concierge', 'the bell captain', 'the room key keeper',
-      'the pillow tester', 'the lobby pianist', 'the towel folder', 'the tour planner'
+      'the concierge', 'the front desk clerk', 'the bellhop',
+      'the housekeeper', 'the guest who packed six pillows', 'the porter with a squeaky cart', 'the one who booked two rooms'
     ] },
     { name: 'Library', category: 'Public places', roles: [
-      'the quiet champion', 'the book whisperer', 'the shelf sorter',
-      'the reading coach', 'the return desk helper', 'the mystery novel fan', 'the bookmark maker'
+      'the librarian', 'the book restorer', 'the reading tutor',
+      'the checkout clerk', 'the reader with seven bookmarks', 'the reader who lost a card', 'the one who whispered too loudly'
     ] },
     { name: 'Movie theater', category: 'Entertainment', roles: [
-      'the usher', 'the ticket ripper', 'the popcorn critic',
-      'the preview expert', 'the seat finder', 'the subtitle reader', 'the film trivia host'
+      'the projectionist', 'the usher', 'the ticket seller',
+      'the popcorn cook', 'the viewer who brought a blanket', 'the one who quoted every preview', 'the guest with popcorn peaks'
     ] },
     { name: 'Museum', category: 'Public places', roles: [
-      'the gallery guide', 'the artifact admirer', 'the history detective',
-      'the audio tour fan', 'the sketchbook keeper', 'the exhibit planner', 'the ancient coin expert'
+      'the curator', 'the gallery guide', 'the conservator',
+      'the art historian', 'the visitor who wore a crown', 'the kid with a sketchbook', 'the guard with a tiny notebook'
     ] },
     { name: 'Night market', category: 'Public places', roles: [
-      'the lantern seller', 'the dumpling sampler', 'the bargain hunter',
-      'the spice expert', 'the night owl', 'the street musician', 'the cashless shopper'
+      'the stall owner', 'the spice vendor', 'the dumpling cook',
+      'the lantern maker', 'the shopper who sampled it all', 'the vendor with a lucky apron', 'the one who haggled for mangoes'
     ] },
     { name: 'Police station', category: 'Services', roles: [
-      'the detective', 'the dispatcher', 'the evidence keeper',
-      'the traffic officer', 'the community helper', 'the badge shiner', 'the interview note-taker'
+      'the detective', 'the radio dispatcher', 'the evidence clerk',
+      'the traffic officer', 'the detective with odd socks', 'the rookie who misplaced a pen', 'the neighbor with a lost parrot'
     ] },
     { name: 'Restaurant', category: 'Food and drink', roles: [
-      'the head waiter', 'the menu memorizer', 'the table planner',
-      'the chef’s helper', 'the pastry fan', 'the host with a smile', 'the order checker'
+      'the head waiter', 'the chef’s helper', 'the host',
+      'the pastry chef', 'the diner ordered dessert first', 'the server with a wobbly tray', 'the cook who sang to soup'
     ] },
     { name: 'School', category: 'Workplaces', roles: [
-      'the substitute teacher', 'the hall monitor', 'the science tutor',
-      'the lunch monitor', 'the class clown', 'the art teacher', 'the homework helper'
+      'the substitute teacher', 'the hall monitor', 'the science teacher',
+      'the art teacher', 'the teacher with a squeaky pen', 'the kid who packed three lunches', 'the one who forgot homework'
     ] },
     { name: 'Space station', category: 'Travel', roles: [
-      'the mission pilot', 'the zero-gravity gardener', 'the star mapper',
-      'the oxygen checker', 'the spacewalk coach', 'the robot caretaker', 'the comet watcher'
+      'the mission pilot', 'the robotics tech', 'the star mapper',
+      'the oxygen engineer', 'the astronaut who packed a plant', 'the one who floated a sandwich', 'the rookie who lost a pencil'
     ] },
     { name: 'Stadium', category: 'Entertainment', roles: [
-      'the score announcer', 'the team mascot', 'the referee',
-      'the jersey collector', 'the ticket scanner', 'the chant leader', 'the halftime host'
+      'the referee', 'the score announcer', 'the team mascot',
+      'the field groundskeeper', 'the fan with a lucky scarf', 'the one who learned every chant', 'the player with two left cleats'
     ] },
     { name: 'Subway station', category: 'Travel', roles: [
-      'the platform guide', 'the map reader', 'the train spotter',
-      'the rush-hour poet', 'the lost-and-found helper', 'the turnstile fixer', 'the next-stop announcer'
+      'the subway driver', 'the platform announcer', 'the transit guide',
+      'the lost-property clerk', 'the commuter who missed a stop', 'the poet who rhymed with trains', 'the one with a huge umbrella'
     ] },
     { name: 'Supermarket', category: 'Public places', roles: [
-      'the cart collector', 'the produce expert', 'the coupon planner',
-      'the aisle navigator', 'the sample taster', 'the checkout speedster', 'the list keeper'
+      'the produce clerk', 'the checkout cashier', 'the cart collector',
+      'the sample cook', 'the shopper with a wonky cart', 'the one who forgot a bag', 'the baker who bought sprinkles'
     ] },
     { name: 'Train station', category: 'Travel', roles: [
-      'the conductor', 'the platform announcer', 'the timetable expert',
-      'the sleeper-car steward', 'the track inspector', 'the luggage porter', 'the ticket puncher'
+      'the rail conductor', 'the timetable clerk', 'the porter',
+      'the sleeper-car host', 'the traveler with four hats', 'the one who waved at wrong train', 'the engineer with lucky whistle'
     ] },
     { name: 'Wedding', category: 'Events', roles: [
-      'the toast writer', 'the ring bearer', 'the bouquet catcher',
-      'the dance-floor starter', 'the cake inspector', 'the playlist picker', 'the photo wrangler'
+      'the florist', 'the toast writer', 'the ring bearer',
+      'the dance instructor', 'the groom’s ex, dance captain', 'the aunt who caught the bouquet', 'the guest who wore two bow ties'
     ] },
     { name: 'Amusement park', category: 'Entertainment', roles: [
-      'the ride tester', 'the queue comedian', 'the park map expert',
-      'the coaster fan', 'the prize booth pro', 'the parade watcher', 'the cotton-candy critic'
+      'the ride operator', 'the ride announcer', 'the costume mascot',
+      'the prize booth attendant', 'the rider who brought a raincoat', 'the one who waved at every duck', 'the parent with many tickets'
     ] },
     { name: 'Animal shelter', category: 'Services', roles: [
-      'the puppy socializer', 'the kitten whisperer', 'the adoption matchmaker',
-      'the dog-walk organizer', 'the treat dispenser', 'the paw-print painter', 'the blanket folder'
+      'the adoption counselor', 'the dog walker', 'the kitten foster',
+      'the vet tech', 'the helper who knows each name', 'the foster with extra treats', 'the walker with two leashes'
     ] },
     { name: 'Arcade', category: 'Entertainment', roles: [
-      'the high-score holder', 'the joystick wizard', 'the token counter',
-      'the pinball champion', 'the button masher', 'the prize-ticket saver', 'the dance-game dancer'
+      'the game technician', 'the pinball champion', 'the token clerk',
+      'the dance-game coach', 'the player with a lucky joystick', 'the kid who saved every ticket', 'the one who beat the machine'
     ] },
     { name: 'Aquarium', category: 'Public places', roles: [
-      'the penguin expert', 'the coral caretaker', 'the shark narrator',
-      'the diver', 'the seal trainer', 'the fish-name inventor', 'the ocean educator'
+      'the marine biologist', 'the penguin keeper', 'the diver',
+      'the ocean guide', 'the keeper who named each fish', 'the visitor with a shark hat', 'the diver who waved at a crab'
     ] },
     { name: 'Art opening', category: 'Events', roles: [
-      'the gallery greeter', 'the bold-color fan', 'the sketchbook artist',
-      'the tiny-frame critic', 'the opening-toast host', 'the sculpture admirer', 'the art-history buff'
+      'the gallery greeter', 'the sculptor', 'the sketch artist',
+      'the art curator', 'the artist with paint on shoes', 'the guest with a tiny frame', 'the one who applauded a lamp'
     ] },
     { name: 'Birthday party', category: 'Events', roles: [
-      'the candle counter', 'the party planner', 'the gift-wrap expert',
-      'the birthday singer', 'the balloon twister', 'the cake cutter', 'the game host'
+      'the party host', 'the cake baker', 'the balloon artist',
+      'the game leader', 'the kid who wore a party crown', 'the guest with too many candles', 'the parent who forgot balloons'
     ] },
     { name: 'Botanical garden', category: 'Outdoors', roles: [
-      'the orchid expert', 'the seed librarian', 'the butterfly watcher',
-      'the plant label writer', 'the greenhouse guide', 'the garden sketcher', 'the pollinator fan'
+      'the botanist', 'the gardener', 'the greenhouse guide',
+      'the seed librarian', 'the gardener who named a fern', 'the visitor in muddy sneakers', 'the one who waved at a bee'
     ] },
     { name: 'Bowling alley', category: 'Entertainment', roles: [
-      'the pin setter', 'the lane coach', 'the strike tracker',
-      'the shoe sanitizer', 'the spare solver', 'the scoreboard keeper', 'the ball polisher'
+      'the bowling coach', 'the lane mechanic', 'the pinsetter',
+      'the scorekeeper', 'the bowler with lucky shoes', 'the one who rolled a slow ball', 'the player cheering for spares'
     ] },
     { name: 'Bus terminal', category: 'Travel', roles: [
-      'the route planner', 'the driver', 'the ticket checker',
-      'the luggage stacker', 'the platform guide', 'the early arriver', 'the seat saver'
+      'the bus driver', 'the ticket clerk', 'the baggage porter',
+      'the route dispatcher', 'the traveler with two lunchboxes', 'the one on the wrong bus', 'the driver who sings the stops'
     ] },
     { name: 'Campground', category: 'Outdoors', roles: [
-      'the park ranger', 'the tent-pitching pro', 'the campfire storyteller',
-      'the trail guide', 'the bug spray expert', 'the marshmallow roaster', 'the map keeper'
+      'the park ranger', 'the trail guide', 'the camp cook',
+      'the tent expert', 'the camper who forgot tent poles', 'the camper with extra s’mores', 'the guide who lost a flashlight'
     ] },
     { name: 'City park', category: 'Outdoors', roles: [
-      'the kite flyer', 'the bench painter', 'the jogger',
-      'the bird feeder', 'the picnic blanket finder', 'the playground monitor', 'the tree identifier'
+      'the groundskeeper', 'the kite instructor', 'the birdwatcher',
+      'the lawn caretaker', 'the jogger with odd socks', 'the kid who fed a squirrel', 'the one with a tiny picnic'
     ] },
     { name: 'Clinic', category: 'Services', roles: [
-      'the triage helper', 'the blood pressure checker', 'the waiting-room reader',
-      'the calm receptionist', 'the appointment reminder', 'the health educator', 'the bandage folder'
+      'the receptionist', 'the nurse practitioner', 'the scheduler',
+      'the health educator', 'the patient with a joke book', 'the one who brought a lucky hat', 'the nurse with shiny stickers'
     ] },
     { name: 'Coffee shop', category: 'Food and drink', roles: [
-      'the latte artist', 'the bean roaster', 'the pastry pairing expert',
-      'the regular who knows everyone', 'the mug collector', 'the quiet corner scout', 'the oat milk taster'
+      'the barista', 'the coffee roaster', 'the baker',
+      'the cashier', 'the regular who knows every name', 'the artist who drew a cat latte', 'the one who ordered two muffins'
     ] },
     { name: 'Community center', category: 'Public places', roles: [
-      'the class coordinator', 'the welcome-desk helper', 'the chess coach',
-      'the craft-table captain', 'the event calendar keeper', 'the volunteer matcher', 'the lost mitten finder'
+      'the class coordinator', 'the chess coach', 'the craft instructor',
+      'the volunteer organizer', 'the helper who found a mitten', 'the neighbor with spare yarn', 'the one who signed up for all'
     ] },
     { name: 'Concert hall', category: 'Entertainment', roles: [
-      'the sound checker', 'the stage manager', 'the aisle usher',
-      'the conductor’s page turner', 'the program collector', 'the standing ovation starter', 'the instrument tuner'
+      'the stage manager', 'the orchestra conductor', 'the sound engineer',
+      'the orchestra usher', 'the musician who tuned by ear', 'the fan with a folded program', 'the one who clapped too early'
     ] },
     { name: 'Diner', category: 'Food and drink', roles: [
-      'the pie specialist', 'the booth selector', 'the early-bird regular',
-      'the menu memorizer', 'the milkshake mixer', 'the jukebox picker', 'the counter stool saver'
+      'the short-order cook', 'the counter server', 'the pie baker',
+      'the breakfast host', 'the regular who runs the jukebox', 'the guest who ordered two stacks', 'the cook with a lucky spatula'
     ] },
     { name: 'Farmers market', category: 'Public places', roles: [
-      'the tomato judge', 'the honey taster', 'the basket carrier',
-      'the flower bunch maker', 'the local cheese fan', 'the early shopper', 'the recipe swapper'
+      'the grower', 'the honey seller', 'the flower arranger',
+      'the cheese maker', 'the shopper with a wicker hat', 'the farmer with purple carrots', 'the shopper who swapped jam'
     ] },
     { name: 'Ferry terminal', category: 'Travel', roles: [
-      'the dock guide', 'the deckhand', 'the tide checker',
-      'the life-jacket inspector', 'the ticket puncher', 'the gull watcher', 'the crossing announcer'
+      'the deckhand', 'the ticket agent', 'the dockmaster',
+      'the safety checker', 'the sailor with a gull hat', 'the one who waved at a boat', 'the traveler with a seashell map'
     ] },
     { name: 'Food court', category: 'Food and drink', roles: [
-      'the tray returner', 'the table saver', 'the menu sampler',
-      'the napkin collector', 'the lunch planner', 'the smoothie fan', 'the fastest order picker'
+      'the tray collector', 'the food vendor', 'the seating host',
+      'the smoothie maker', 'the guest with four napkins', 'the one who sampled every sauce', 'the friend saving six seats'
     ] },
     { name: 'Food truck', category: 'Food and drink', roles: [
-      'the window server', 'the recipe tinkerer', 'the queue host',
-      'the sauce expert', 'the menu chalk artist', 'the grill helper', 'the napkin supplier'
+      'the grill cook', 'the window server', 'the recipe developer',
+      'the queue host', 'the cook who made pickle fries', 'the customer who brought a fork', 'the owner with a rolling menu'
     ] },
     { name: 'Hiking trail', category: 'Outdoors', roles: [
-      'the trail marker painter', 'the boot lace fixer', 'the bird call mimic',
-      'the snack packer', 'the elevation tracker', 'the map reader', 'the summit selfie taker'
+      'the hiking guide', 'the park naturalist', 'the boot fitter',
+      'the wildlife tracker', 'the hiker who packed two maps', 'the one who whistled at a jay', 'the climber with a snack stash'
     ] },
     { name: 'Ice cream shop', category: 'Food and drink', roles: [
-      'the scoop artist', 'the sprinkle expert', 'the flavor inventor',
-      'the cone balancer', 'the sundae architect', 'the freezer checker', 'the waffle cone fan'
+      'the scoop artist', 'the flavor maker', 'the frozen-treat server',
+      'the freezer technician', 'the kid who asked for a cloud', 'the guest with six scoops', 'the one who invented maple mint'
     ] },
     { name: 'Lakeside dock', category: 'Outdoors', roles: [
-      'the canoe renter', 'the knot tyer', 'the dock painter',
-      'the paddle collector', 'the fishing coach', 'the loon listener', 'the sunset watcher'
+      'the canoe instructor', 'the dockhand', 'the fishing guide',
+      'the boat renter', 'the fisher who forgot the bait', 'the one who dropped a paddle', 'the visitor with a paper boat'
     ] },
     { name: 'Newsroom', category: 'Workplaces', roles: [
-      'the headline editor', 'the fact checker', 'the weather reporter',
-      'the camera operator', 'the crossword solver', 'the deadline sprinter', 'the interview asker'
+      'the editor', 'the reporter', 'the fact checker',
+      'the camera operator', 'the reporter who chased a hat', 'the editor with a red pencil', 'the one who filed upside down'
     ] },
     { name: 'Office tower', category: 'Workplaces', roles: [
-      'the elevator expert', 'the floor directory reader', 'the window cleaner',
-      'the meeting scheduler', 'the coffee runner', 'the badge scanner', 'the lunch-break walker'
+      'the elevator technician', 'the lobby receptionist', 'the courier',
+      'the office manager', 'the worker who lost a badge', 'the one who booked two meetings', 'the courier with a squeaky bag'
     ] },
     { name: 'Parade', category: 'Events', roles: [
-      'the float decorator', 'the drum major', 'the confetti sweeper',
-      'the baton twirler', 'the route marshal', 'the costume mender', 'the wave leader'
+      'the drum major', 'the float builder', 'the route marshal',
+      'the uniform stitcher', 'the marcher with mixed-up socks', 'the one who waved at a dog', 'the drummer who lost one stick'
     ] },
     { name: 'Picnic', category: 'Events', roles: [
-      'the blanket un-folder', 'the sandwich architect', 'the ant lookout',
-      'the lemonade mixer', 'the frisbee thrower', 'the fruit cutter', 'the napkin saver'
+      'the blanket coordinator', 'the blanket caterer', 'the lemonade seller',
+      'the park helper', 'the guest with a spare blanket', 'the one who packed no forks', 'the walker with a sandwich'
     ] },
     { name: 'Pizza parlor', category: 'Food and drink', roles: [
-      'the dough spinner', 'the topping negotiator', 'the oven watcher',
-      'the crust critic', 'the delivery planner', 'the cheese-pull judge', 'the garlic bread fan'
+      'the dough maker', 'the oven chef', 'the server',
+      'the topping planner', 'the cook who tossed dough high', 'the guest who chose ten toppings', 'the one who made a cheese rope'
     ] },
     { name: 'Playground', category: 'Outdoors', roles: [
-      'the swing-set timer', 'the slide inspector', 'the tag-game champion',
-      'the hopscotch artist', 'the sandbox architect', 'the bubble blower', 'the turn-taker coach'
+      'the play-area supervisor', 'the swing attendant', 'the bubble artist',
+      'the tag referee', 'the kid who queued for the slide', 'the parent with an extra rope', 'the one who counted every swing'
     ] },
     { name: 'Post office', category: 'Services', roles: [
-      'the stamp collector', 'the parcel sorter', 'the mail carrier',
-      'the address checker', 'the envelope folder', 'the route memorizer', 'the postcard writer'
+      'the mail carrier', 'the parcel sorter', 'the stamp clerk',
+      'the route planner', 'the sender with a tiny box', 'the one who mailed a card twice', 'the carrier with postcards'
     ] },
     { name: 'Research lab', category: 'Workplaces', roles: [
-      'the sample labeler', 'the microscope expert', 'the lab notebook keeper',
-      'the hypothesis tester', 'the safety-glasses stylist', 'the data spotter', 'the careful pipetter'
+      'the lab technician', 'the sample analyst', 'the microscope specialist',
+      'the safety officer', 'the scientist with odd goggles', 'the one who labeled a banana', 'the researcher with a fern'
     ] },
     { name: 'Rescue center', category: 'Services', roles: [
-      'the first-aid coach', 'the supply packer', 'the radio listener',
-      'the rope coiler', 'the map coordinator', 'the calm voice', 'the training dummy’s friend'
+      'the rescue coordinator', 'the first-aid trainer', 'the radio operator',
+      'the supply captain', 'the helper with extra socks', 'the one who untangled every rope', 'the rookie with a loud whistle'
     ] },
     { name: 'School concert', category: 'Events', roles: [
-      'the music teacher', 'the stage parent', 'the sheet-music passer',
-      'the solo singer', 'the instrument tuner', 'the applause starter', 'the bow coach'
+      'the choir director', 'the backstage parent', 'the sheet-music helper',
+      'the solo singer', 'the parent who brought earplugs', 'the singer who lost a shoe', 'the one who hummed wrong notes'
     ] },
     { name: 'Science fair', category: 'Events', roles: [
-      'the volcano builder', 'the poster designer', 'the experiment explainer',
-      'the model tester', 'the ribbon judge', 'the safety-goggles fan', 'the question asker'
+      'the experiment coach', 'the poster artist', 'the ribbon judge',
+      'the demo host', 'the kid who built a volcano', 'the one whose robot smiled', 'the judge with a big clipboard'
     ] },
     { name: 'Street fair', category: 'Events', roles: [
-      'the craft booth maker', 'the sidewalk chalk artist', 'the ring toss expert',
-      'the lemonade stand boss', 'the local band fan', 'the prize-ticket saver', 'the face-paint artist'
+      'the craft seller', 'the chalk artist', 'the ring-toss host',
+      'the lemonade vendor', 'the artist with a painted nose', 'the one who won a rubber duck', 'the shopper with glitter shoes'
     ] },
     { name: 'Tea house', category: 'Food and drink', roles: [
-      'the steep-time expert', 'the teapot collector', 'the tiny-cup server',
-      'the herbal blend mixer', 'the quiet conversation host', 'the biscuit dipper', 'the kettle watcher'
+      'the tea blender', 'the teapot collector', 'the tea server',
+      'the kettle keeper', 'the host who steeped it too long', 'the guest with a tiny spoon', 'the one who named each teapot'
     ] },
     { name: 'Town hall', category: 'Services', roles: [
-      'the meeting chair', 'the microphone tester', 'the agenda keeper',
-      'the question card reader', 'the sign-up sheet host', 'the bell ringer', 'the minutes taker'
+      'the meeting chair', 'the clerk', 'the microphone technician',
+      'the agenda coordinator', 'the neighbor with a question', 'the one who rang early', 'the speaker with a wobbly podium'
     ] },
     { name: 'Town square', category: 'Public places', roles: [
-      'the fountain watcher', 'the chess-table regular', 'the plaza guide',
-      'the pigeon’s friend', 'the public speaker', 'the bench storyteller', 'the clock keeper'
+      'the fountain attendant', 'the chess-table coach', 'the plaza guide',
+      'the clockkeeper', 'the regular who fed a pigeon', 'the one who started a singalong', 'the visitor with a huge umbrella'
     ] },
     { name: 'Treehouse', category: 'Outdoors', roles: [
-      'the rope ladder expert', 'the lookout', 'the secret notebook keeper',
-      'the branch checker', 'the birdhouse builder', 'the leaf collector', 'the fort architect'
+      'the carpenter', 'the lookout', 'the birdhouse builder',
+      'the fort architect', 'the kid who named every branch', 'the one who forgot the ladder', 'the builder with a compass'
     ] },
     { name: 'Waterfall', category: 'Outdoors', roles: [
-      'the mist watcher', 'the rock-step guide', 'the spray photographer',
-      'the river sound listener', 'the poncho lender', 'the safe-distance coach', 'the rainbow spotter'
+      'the park guide', 'the trail steward', 'the photographer',
+      'the nature educator', 'the visitor with rainbow notes', 'the one who wore two ponchos', 'the guide who saw a small frog'
     ] },
     { name: 'Workshop', category: 'Workplaces', roles: [
-      'the tool organizer', 'the sawdust sweeper', 'the repair coach',
-      'the tape-measure expert', 'the scrap-wood saver', 'the goggles reminder', 'the prototype painter'
+      'the woodworker', 'the repair technician', 'the tool maker',
+      'the safety mentor', 'the maker who glued a hat', 'the one who measured twice', 'the tinkerer with a wonky wheel'
     ] }
   ];
 
