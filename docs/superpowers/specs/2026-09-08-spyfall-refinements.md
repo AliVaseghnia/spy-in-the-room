@@ -9,6 +9,18 @@ two-spy, accusation, and session loops explicit.
 - Four to eight players receive one spy.
 - Nine to twelve players receive two spies.
 - In a two-spy round, each spy privately sees the other spy's name.
+
+- Built-in location rounds also give each non-spy a private role prompt.
+  Prompts do not repeat until that location’s deck is exhausted; only then
+  may they cycle. Spies receive no location role.
+- Custom-secret rounds have no location roles. Before the result, general
+  snapshots omit all roles; each non-spy’s role appears only on their private
+  card. The result identifies non-spy roles and labels spies as “Spy”.
+
+- The built-in role catalog is server-only. The browser's location deck
+  exposes names and categories only; role prompts never enter public assets
+  or client caches.
+- Answer in character if you like; don’t say your role outright.
 - The question phase is verbal. Ask one question, let the answerer ask next,
   do not ask follow-up questions, and do not immediately ask the previous
   questioner.
@@ -26,9 +38,9 @@ two-spy, accusation, and session loops explicit.
 
 ## Session rules
 
-- A session contains five rounds.
-- Locations do not repeat while unused locations remain in the deck. If the
-  deck is exhausted, the deck becomes available again.
+- A standard game samples one fixed, alphabetized board of 24 locations from the built-in deck.
+- Deck-mode rounds use an unused location from that board; if all 24 are used, the board becomes available again.
+- The board is public, and spies choose their deck-mode guess from it. Custom-secret rounds keep free-text guesses and have no board; legacy games without a stored board use the full deck.
 - After each result, the interface shows round points and the cumulative
   leaderboard before offering the next round.
 - At the end of round five, the highest cumulative score wins. Ties are shown
@@ -39,5 +51,5 @@ two-spy, accusation, and session loops explicit.
 Voting is confirmed by the group verbally because this is a shared-device
 game and there is no individual player authentication. The server still
 authoritatively checks phases, player IDs, spy assignments, guess order,
-revisions, and idempotency keys. Location-specific roles, custom decks,
-rotating leadership, online rooms, and publishing are later extensions.
+revisions, and idempotency keys. Custom decks, rotating leadership,
+online rooms, and publishing are later extensions.

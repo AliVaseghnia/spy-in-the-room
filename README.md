@@ -16,7 +16,7 @@ through the questions without ever learning where they are.
 
 <p align="center">
   <img src="docs/screenshots/setup-mobile.png" width="240" alt="Add players and pick a round length">
-  <img src="docs/screenshots/reveal-agent-mobile.png" width="240" alt="Hold to reveal your card">
+  <img src="docs/screenshots/reveal-agent-mobile.png" width="240" alt="Reveal your card, then hide it before passing the phone">
   <img src="docs/screenshots/round-mobile.png" width="240" alt="Question round with a live timer">
 </p>
 <p align="center">
@@ -30,9 +30,9 @@ through the questions without ever learning where they are.
 Most pass-the-phone deductions are a timer and a text prompt. This one is
 built to feel like a game you reach for again:
 
-- **Hold to reveal.** Press and hold to read your card. Let go and it hides
-  instantly — no "someone left the screen open" incidents, and it feels like
-  checking a classified dossier.
+- **Two-tap handoff.** The named player reveals their card, then one action
+  hides it and passes the phone to the next player. The final hide starts the
+  round.
 - **Question deck.** A tap deals a location-agnostic question ("What is the
   loudest thing here?"). The spy can use it too; nobody stalls out.
 - **Chaos mode.** An optional extra public rule each round, such as *answers must be
@@ -41,23 +41,27 @@ built to feel like a game you reach for again:
   colour, and haptic/audio ticks at one minute and ten seconds.
 - **Players are tokens.** Everyone gets a stable avatar and colour that
   follows them through the handoff, the vote, and the scoreboard.
-- **A result worth watching.** A stamp hits, the location and spies are
-  revealed, points animate onto a leaderboard, and the whole result can be
-  shared to the group chat.
+- **A result worth watching.** A stamp hits, the location, spy team, and
+  player roles are revealed; points animate onto a leaderboard, and the whole
+  result can be shared to the group chat.
 - **It remembers your table.** Names, cue preferences, and chaos mode are
   stored on the device. Nothing about the game itself ever is.
 
 ## How to play
 
-1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Use a built-in
-   location or bring your own secret.
-2. **Hold, read, pass.** Each player holds the card button to peek at their
-   role, then passes the phone on. 9–12 players get **two spies** who know
-   each other.
+1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Standard games
+   sample a 24-location board from the 65 built-in locations; custom games use
+   your own secret.
+2. **Reveal, hide & pass.** The named player reveals their card, then hides it
+   with one tap to pass the phone onward. The last hide starts the round.
+   Built-in location cards also give each non-spy a role prompt; custom
+   secrets do not. Answer in character if you like; don’t say your role outright.
+   9–12 players get **two spies** who know each other.
 3. **Ask, bluff, vote.** Ask one question at a time without revealing the
    location. When the clock stops, the room names one suspect.
-4. **Last shot.** If the room accuses a spy, the spy gets one guess at the
-   secret. Name it and the spies steal the round; miss and the room wins.
+4. **Last shot.** If the room accuses a spy, the spy gets one guess from the
+   location board. Name the secret and the spies steal the round; miss and the
+   room wins.
 5. **Five rounds.** Points land on a running leaderboard — spies score 3 for
    a correct guess and 2 otherwise, the room scores 2.
 
@@ -68,11 +72,11 @@ built to feel like a game you reach for again:
 | Players | 4–12, one phone, no accounts |
 | Rounds | 3 / 5 / 8 minute timers, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
-| Secrets | 65 built-in locations across 8 categories, or a custom secret |
-| Feel | Hold-to-reveal cards, flip animation, timer ring, twists, avatars, audio + haptics |
+| Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
+| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics |
 | Platform | Installable PWA shell, offline reconnect fallback, mobile-first responsive layout |
 | Accessibility | Full keyboard flow, live-region announcements, focus management, `prefers-reduced-motion` support |
-| Privacy | Server-authoritative roles; general API responses never contain the location, spy flags, or card contents |
+| Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never the true location, spy flags, or roles |
 
 ## Architecture
 
@@ -158,10 +162,10 @@ Preview/Production database separation and migration order, is in
 npm test
 ```
 
-The suite is 118 tests across pure rule contracts, static browser/CSP/PWA
-contracts, and full API flows against the deterministic memory store. It runs
-without a database, network, or browser. GitHub Actions runs it on every push
-and pull request.
+The suite covers pure rule contracts, static browser/CSP/PWA contracts, and
+full API flows against the deterministic memory store. It runs without a
+database, network, or browser. GitHub Actions runs it on every push and pull
+request.
 
 Syntax checks used in CI:
 
@@ -180,9 +184,10 @@ let the daily cron call `/api/maintenance/cleanup`. Full instructions:
 
 ## Security & privacy notes
 
-- Secret assignments, the location, and the spy flags live only in the server
-  store. Snapshots are sanitized per session and card responses are
-  `Cache-Control: no-store`.
+- True locations, spy assignments, and non-spy location roles are persisted
+  in the server store. Pre-result snapshots never contain them; no-store card
+  responses contain only the current player’s assignment. Result snapshots
+  reveal roles after the round resolves.
 - The service worker caches only public shell assets. `/api/**` is never
   cached.
 - `prefs.js` is the only code that touches browser storage, and it persists

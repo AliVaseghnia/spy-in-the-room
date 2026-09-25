@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=16">
+    <link rel="stylesheet" href="styles.css?v=17">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -191,24 +191,27 @@
 
           <section id="reveal-view" class="phase-view action-card" data-phase="reveal" aria-labelledby="reveal-title" hidden>
             <div class="handoff">
-              <img id="reveal-avatar" class="avatar avatar-large avatar-app-icon" src="assets/app-icon-192.png" alt="" aria-hidden="true">
               <p class="section-kicker" id="reveal-progress">Card 1 of 5</p>
-              <h2 id="reveal-title">Pass the phone to <span id="reveal-name">Player 1</span></h2>
-              <p>Only the named player should look at this card.</p>
+              <ol id="reveal-steps" class="reveal-steps" aria-label="Card handoff steps">
+                <li data-reveal-step="reveal" aria-current="step"><span class="reveal-step-number">1</span><span>Reveal</span></li>
+                <li data-reveal-step="pass"><span class="reveal-step-number">2</span><span>Hide &amp; pass</span></li>
+              </ol>
+              <h2 id="reveal-title">Pass the phone to Player 1</h2>
+              <p id="reveal-instruction">Only the named player should look at this card.</p>
             </div>
 
             <div id="reveal-card" class="secret-card">
               <div class="secret-card-inner">
                 <div class="secret-card-front" aria-hidden="true">
-                  <span class="secret-card-front-mark" aria-hidden="true">🕵️</span>
-                  <p class="secret-label">Classified</p>
-                  <p class="secret-hint">Hold the button below to peek</p>
+                  <img class="phase-art reveal-front-art" src="assets/pass-phone.png" alt="" aria-hidden="true">
+                  <p class="secret-label">Private card</p>
+                  <p class="secret-hint">Reveal only when the named player is ready.</p>
                 </div>
                 <div id="reveal-card-face" class="secret-card-face">
                   <img id="reveal-art" class="phase-art reveal-art" src="assets/pass-phone.png" alt="" aria-hidden="true">
                   <p id="reveal-label" class="secret-label">Your card is ready</p>
-                  <p id="reveal-secret" class="secret-value">Hold to reveal.</p>
-                  <p id="reveal-hint" class="secret-hint">Peek, hide, pass.</p>
+                  <p id="reveal-secret" class="secret-value">Reveal your card when ready.</p>
+                  <p id="reveal-hint" class="secret-hint">Only the named player should see this.</p>
                 </div>
               </div>
               <div id="privacy-cover" class="privacy-cover" hidden aria-hidden="true">
@@ -218,10 +221,10 @@
             </div>
 
             <div class="sticky-action">
-              <button id="reveal-action" class="button button-primary button-wide hold-button" type="button" aria-describedby="reveal-hint">
-                <span id="reveal-action-label">Hold to reveal</span>
+              <button id="reveal-action" class="button button-primary button-wide reveal-button" type="button" aria-describedby="reveal-hint reveal-note">
+                <span id="reveal-action-label">Reveal card</span>
               </button>
-              <p class="hold-note" id="hold-note">Press and hold while you read. Let go and it hides.</p>
+              <p class="reveal-note" id="reveal-note">Pass the phone to the named player before revealing.</p>
             </div>
           </section>
 
@@ -253,6 +256,11 @@
             </div>
 
             <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
+
+            <details id="location-board" class="question-protocol location-board" hidden>
+              <summary>Possible locations</summary>
+              <ul id="location-board-list" class="location-board-grid" aria-label="Possible locations"></ul>
+            </details>
 
             <div class="question-card">
               <div class="question-card-head">
@@ -315,7 +323,7 @@
             <div id="guess-search-field" class="guess-search-field">
               <label class="sr-only" for="guess-search-input">Search locations</label>
               <input id="guess-search-input" type="search" autocomplete="off" placeholder="Search locations" aria-describedby="guess-search-help">
-              <p id="guess-search-help" class="field-help">Tap the secret you think the room saw.</p>
+              <p id="guess-search-help" class="field-help">Search available locations to narrow the list.</p>
             </div>
 
             <ul id="guess-list" class="choice-list guess-grid" aria-label="Pick the secret">
@@ -353,6 +361,12 @@
                   <ul id="result-spies" class="spy-list">
                     <li>Unknown</li>
                   </ul>
+                </dd>
+              </div>
+              <div id="result-player-roles-panel" hidden>
+                <dt>Player roles</dt>
+                <dd>
+                  <ul id="result-player-roles" class="role-list" aria-label="Player roles"></ul>
                 </dd>
               </div>
             </dl>
@@ -457,15 +471,15 @@
           <li class="how-to-play-step">
             <span class="how-to-play-number" aria-hidden="true">02</span>
             <div>
-              <h3>Hold to peek, then pass</h3>
-              <p>Press and hold to read your card. It hides the moment you let go.</p>
+              <h3>Reveal, hide &amp; pass</h3>
+              <p>The named player reveals their card, then taps once to hide it and pass the phone to the next player. The final hide starts the round.</p>
             </div>
           </li>
           <li class="how-to-play-step">
             <span class="how-to-play-number" aria-hidden="true">03</span>
             <div>
               <h3>Ask, bluff, accuse</h3>
-              <p>Talk around the location without giving it away. Watch who sounds lost.</p>
+              <p>Talk around the location without giving it away. Answer in character if you like; don’t say your role outright. Watch who sounds lost.</p>
             </div>
           </li>
           <li class="how-to-play-step">
@@ -583,15 +597,14 @@
       </div>
     </dialog>
 
-    <!-- The ?v= query makes browsers fail fast when an older cache-first
-         service worker is still controlling the page: pre-v13 workers only
-         intercept same-path requests without a query string, so these land
-         on the network. v13+ assets are network-first and never need a bump. -->
-    <script src="game-logic.js?v=15"></script>
+    <!-- The ?v= query invalidates browser HTTP caches after a public asset changes.
+         Pre-v13 service workers only intercept same-path requests without a
+         query; v13+ assets are network-first. -->
+    <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=15"></script>
-    <script src="game.js?v=16"></script>
+    <script src="game-view.js?v=17"></script>
+    <script src="game.js?v=17"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

@@ -23,11 +23,12 @@ test('the game shell exposes the pass-the-phone feel surfaces', () => {
     'spice-toggle',
     'settings-dialog',
     'settings-button',
-    'reveal-avatar',
     'reveal-progress',
+    'reveal-steps',
+    'reveal-instruction',
     'reveal-card-face',
     'reveal-action-label',
-    'hold-note',
+    'reveal-note',
     'timer-ring',
     'timer-ring-progress',
     'round-intel',
@@ -48,10 +49,11 @@ test('the game shell exposes the pass-the-phone feel surfaces', () => {
   assert.match(css, /\.timer-ring/);
   assert.match(css, /\.leaderboard-bar/);
   assert.match(css, /\.result-stamp/);
-  assert.match(controller, /function beginPeek\s*\(/);
-  assert.match(controller, /function endPeek\s*\(/);
+  assert.match(controller, /function beginReveal\s*\(/);
   assert.match(controller, /function prefetchCurrentCard\s*\(/);
-  assert.match(controller, /pointerdown/);
+  assert.match(controller, /revealAction\.addEventListener\(['"]click['"]/);
+  assert.doesNotMatch(controller, /TAP_PEEK_MS|TIMED_REVEAL_MS|timedReveal|function beginPeek\s*\(/);
+  assert.match(view, /Pass the phone to/);
   assert.match(controller, /function handleDrawQuestion\s*\(/);
   assert.match(controller, /function handleShareResult\s*\(/);
   assert.match(view, /leaderboard-bar/);
@@ -117,4 +119,22 @@ test('remembered players and cue flags are the only persisted preferences', () =
   } finally {
     delete globalThis.localStorage;
   }
+});
+
+test('location roles appear in the rules, result markup, and project guidance', () => {
+  const html = readProjectFile('index.html');
+  const controller = readProjectFile('game.js');
+  const view = readProjectFile('game-view.js');
+  const readme = readProjectFile('README.md');
+  const rulesSpec = readProjectFile('docs/superpowers/specs/2026-09-08-spyfall-refinements.md');
+  const instruction = /Answer in character if you like; don’t say your role outright\./;
+
+  assert.match(html, instruction);
+  assert.match(readme, instruction);
+  assert.match(rulesSpec, instruction);
+  assert.match(html, /id="result-player-roles-panel"/);
+  assert.match(html, /id="result-player-roles"/);
+  assert.match(controller, /resultRolesPanel:\s*getElement\('result-player-roles-panel'\)/);
+  assert.match(controller, /resultRoles:\s*getElement\('result-player-roles'\)/);
+  assert.match(view, /outcome\.playerRoles/);
 });

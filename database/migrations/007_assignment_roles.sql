@@ -1,0 +1,2 @@
+ALTER TABLE assignments
+  ADD COLUMN IF NOT EXISTS role text NULL;

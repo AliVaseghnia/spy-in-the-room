@@ -53,6 +53,7 @@ function mapGame(row) {
     sessionId: row.session_id ?? row.sessionId,
     timerSeconds: Number(row.timer_seconds ?? row.timerSeconds),
     secretMode: row.secret_mode ?? row.secretMode ?? 'deck',
+    boardLocations: row.board_locations ?? row.boardLocations ?? null,
     roundLimit: Number(row.round_limit ?? row.roundLimit ?? 5),
     currentRoundNumber: Number(row.current_round_number ?? row.currentRoundNumber),
     currentPhase: row.current_phase ?? row.currentPhase,
@@ -106,7 +107,8 @@ function mapAssignment(row) {
   return {
     roundId: row.round_id ?? row.roundId,
     playerId: row.player_id ?? row.playerId,
-    isSpy: Boolean(row.is_spy ?? row.isSpy)
+    isSpy: Boolean(row.is_spy ?? row.isSpy),
+    role: row.role ?? null
   };
 }
 
@@ -330,16 +332,17 @@ class PostgresTransaction {
   async insertGame(record) {
     await this.query(
       `INSERT INTO games
-       (id, session_id, timer_seconds, secret_mode, round_limit, current_round_number, current_phase,
+       (id, session_id, timer_seconds, secret_mode, round_limit, board_locations, current_round_number, current_phase,
         current_reveal_index, current_deadline_at, current_accused_player_id,
         current_winner, current_reason, revision, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
       [
         record.id,
         record.sessionId,
         record.timerSeconds,
         record.secretMode || 'deck',
         record.roundLimit || 5,
+        record.boardLocations ?? null,
         record.currentRoundNumber,
         record.currentPhase,
         record.currentRevealIndex,
@@ -392,9 +395,9 @@ class PostgresTransaction {
       );
       for (const assignment of round.assignments || []) {
         await this.query(
-          `INSERT INTO assignments (round_id, player_id, is_spy)
-           VALUES ($1, $2, $3)`,
-          [round.id, assignment.playerId, assignment.isSpy]
+          `INSERT INTO assignments (round_id, player_id, is_spy, role)
+           VALUES ($1, $2, $3, $4)`,
+          [round.id, assignment.playerId, assignment.isSpy, assignment.role ?? null]
         );
       }
     }
@@ -436,9 +439,9 @@ class PostgresTransaction {
     );
     for (const assignment of round.assignments || []) {
       await this.query(
-        `INSERT INTO assignments (round_id, player_id, is_spy)
-         VALUES ($1, $2, $3)`,
-        [round.id, assignment.playerId, assignment.isSpy]
+        `INSERT INTO assignments (round_id, player_id, is_spy, role)
+         VALUES ($1, $2, $3, $4)`,
+        [round.id, assignment.playerId, assignment.isSpy, assignment.role ?? null]
       );
     }
     return clone(round);
@@ -449,7 +452,7 @@ class PostgresTransaction {
     const parameters = sessionId === undefined ? [gameId] : [gameId, sessionId];
     const lock = forUpdate ? ' FOR UPDATE' : '';
     const result = await this.query(
-      `SELECT id, session_id, timer_seconds, secret_mode, round_limit, current_round_number, current_phase,
+      `SELECT id, session_id, timer_seconds, secret_mode, round_limit, board_locations, current_round_number, current_phase,
               current_reveal_index, current_deadline_at, current_accused_player_id,
               current_winner, current_reason, revision, created_at, updated_at
        FROM games
@@ -480,7 +483,7 @@ class PostgresTransaction {
     for (const row of rowsOf(rounds)) {
       const round = mapRound(row);
       const assignments = await this.query(
-        `SELECT round_id, player_id, is_spy
+        `SELECT round_id, player_id, is_spy, role
          FROM assignments
          WHERE round_id = $1`,
         [round.id]
@@ -594,7 +597,7 @@ class PostgresTransaction {
     for (const row of rows) {
       const round = mapRound(row);
       const assignments = await this.query(
-        `SELECT round_id, player_id, is_spy
+        `SELECT round_id, player_id, is_spy, role
          FROM assignments
          WHERE round_id = $1`,
         [round.id]

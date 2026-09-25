@@ -40,11 +40,13 @@ test('project metadata pins current Node runtime, an exact Neon Postgres driver,
   assert.equal(fs.existsSync(path.join(PROJECT_ROOT, 'package-lock.json')), true);
 });
 
-test('Vercel packaging leaves every nested API path as a function route', () => {
+test('Vercel blocks server source files and preserves nested API function routing', () => {
   const vercelJson = parseProjectJson('vercel.json');
 
   assert.equal(vercelJson.rewrites, undefined, 'API paths must not be rewritten to the shell');
-  assert.equal(vercelJson.routes, undefined, 'implicit API routing must remain intact');
+  assert.deepEqual(vercelJson.routes, [
+    { src: '^/server(?:/.*)?$', status: 404 }
+  ]);
   assert.ok(vercelJson.functions, 'Node functions must be configured explicitly');
   const apiFunctionConfig = vercelJson.functions['api/**/*.js'];
   assert.ok(apiFunctionConfig, 'nested API functions must be matched');
@@ -119,6 +121,20 @@ test('tombstone retention has a forward migration for existing databases', () =>
     readProjectFile('database/migrations/001_initial.sql'),
     /create table if not exists\s+game_tombstones[\s\S]*session_id[\s\S]*on delete cascade/i
   );
+});
+
+test('location board schema is additive and nullable for legacy games', () => {
+  const migration = readProjectFile('database/migrations/006_location_board.sql');
+
+  assert.match(migration, /alter table\s+games/i);
+  assert.match(migration, /add column if not exists\s+board_locations\s+text\[\]\s+null/i);
+});
+
+test('assignment roles use an additive nullable schema migration', () => {
+  const migration = readProjectFile('database/migrations/007_assignment_roles.sql');
+
+  assert.match(migration, /alter table\s+assignments/i);
+  assert.match(migration, /add column if not exists\s+role\s+text\s+null/i);
 });
 
 test('configuration exposes the stable shape and rejects incomplete production secrets', () => {

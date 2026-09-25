@@ -11,7 +11,7 @@ function readProjectFile(relativePath) {
   return fs.readFileSync(path.join(PROJECT_ROOT, relativePath), 'utf8');
 }
 
-test('app identity uses the approved icon for browser, install, and handoff surfaces', () => {
+test('app identity uses the approved icon without repeating it inside the reveal card', () => {
   const html = readProjectFile('index.html');
   const manifest = JSON.parse(readProjectFile('manifest.webmanifest'));
   const worker = readProjectFile('service-worker.js');
@@ -28,7 +28,8 @@ test('app identity uses the approved icon for browser, install, and handoff surf
   assert.match(html, /<link rel=["']icon["'][^>]+href=["']assets\/app-icon-64\.png["'][^>]+type=["']image\/png["']/i);
   assert.match(html, /<link rel=["']apple-touch-icon["'][^>]+href=["']assets\/app-icon-180\.png["']/i);
   assert.match(html, /<img[^>]+class=["'][^"']*brand-mark[^"']*["'][^>]+src=["']assets\/app-icon-64\.png["']/i);
-  assert.match(html, /<img[^>]+id=["']reveal-avatar["'][^>]+class=["'][^"']*avatar-app-icon[^"']*["'][^>]+src=["']assets\/app-icon-192\.png["']/i);
+  assert.doesNotMatch(html, /id=["']reveal-avatar["']/i);
+  assert.match(html, /class=["'][^"']*reveal-front-art[^"']*["'][^>]+src=["']assets\/pass-phone\.png["']/i);
 
   assert.deepEqual(
     manifest.icons.map((icon) => ({ src: icon.src, sizes: icon.sizes, type: icon.type })),

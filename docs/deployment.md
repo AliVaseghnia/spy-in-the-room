@@ -17,7 +17,7 @@ In production, the game API configuration path rejects missing values, including
 
 `APP_ORIGIN` is singular. Each environment accepts one exact origin value, not a list of local, Preview, and Production origins. Use the origin that actually serves that environment.
 
-Migration `003_spyfall_refinements.sql` adds the five-round limit and persisted ordered guesses and points. Migration `004_custom_secret_mode.sql` adds the explicit secret-mode marker and custom-secret round storage used by the current release. Migration `005_custom_round_length.sql` widens the stored round-length constraint from the 3/5/8 minute presets to the 1-60 minute range the API accepts. Apply pending migrations before deploying the corresponding code to a database that already has earlier migrations.
+Migration `003_spyfall_refinements.sql` adds the five-round limit and persisted ordered guesses and points. Migration `004_custom_secret_mode.sql` adds the explicit secret-mode marker and custom-secret round storage used by the current release. Migration `005_custom_round_length.sql` widens the stored round-length constraint from the 3/5/8 minute presets to the 1-60 minute range the API accepts. Migration `006_location_board.sql` adds a nullable per-game public location board, and `007_assignment_roles.sql` adds a nullable role to each assignment. Apply pending migrations before deploying the corresponding code to a database that already has earlier migrations.
 
 ## Database provisioning
 
@@ -38,7 +38,6 @@ sessions, and persistence end to end.
 ### In-memory development server
 
 ```bash
-cd "1 Projects/Spy game"
 npm install
 npm run dev
 ```
@@ -55,7 +54,6 @@ migration behavior.
 Use a disposable Postgres database. Do not point local testing at the production database.
 
 ```bash
-cd "1 Projects/Spy game"
 npm install
 
 export DATABASE_URL='postgres://user:password@host/database'
@@ -80,23 +78,21 @@ POST mutations send JSON and an idempotency key. `DELETE /api/games/:gameId` sen
 
 ## Vercel deployment
 
-1. Create or open the standalone Vercel project for this app. Set its Root Directory to exactly `1 Projects/Spy game`. The repository root is the Second Brain vault, not the Vercel project root.
+1. Create or open the standalone Vercel project for this app. Set its Root Directory to `.` (the root of this repository).
 2. Provision or select the separate Preview and Production Postgres databases, then configure the environment variables separately for Preview and Production. Use the Preview origin and Preview database for Preview, and the final production origin and Production database for Production. Do not copy a production connection string into Preview by accident.
 3. Install dependencies and run the migrations against the database for the target environment before routing traffic there:
 
    ```bash
-   cd "1 Projects/Spy game"
    npm install
    DATABASE_URL='postgres://target-connection' node scripts/migrate.js
    ```
-
    Keep the connection string in the shell, CI secret store, or another protected mechanism. Do not write it into a committed file. The migration files are source-controlled, but the Vercel packaging ignore rules exclude migrations and scripts from the runtime asset bundle, so migrations are an explicit release step.
-4. Deploy a Preview first. Check `https://<preview-domain>/api/health` and expect JSON `{ "data": { "ok": true } }`, not the frontend shell. With the Preview database migrated, exercise `GET /api/games`, create/resume, a private card handoff, and one mutation. Confirm the nested `/api/games/:gameId/card`, `/actions`, and `/rounds` routes resolve as Functions rather than being rewritten to `index.html`.
+4. Deploy a Preview first. Check `https://<preview-domain>/api/health` and expect JSON `{ "data": { "ok": true } }`, not the frontend shell. With the Preview database migrated, exercise `GET /api/games`, create/resume, a private card handoff, and one mutation. Confirm nested API routes resolve as Functions and `/server/...` source URLs return HTTP 404.
 5. Before the first Production request, apply all pending migrations to the Production database, set `CRON_SECRET`, and verify that Production `APP_ORIGIN` is the final HTTPS origin. Deploy, check both `https://<production-domain>/api/health` and `https://<production-domain>/api/ready`, and run the same smoke path. A missing or failing readiness check must block traffic.
 6. Confirm the Vercel Cron job invokes `/api/maintenance/cleanup` daily at 03:00 UTC and returns `200` in platform logs. Do not call it from the public browser; it is an operational endpoint protected by `CRON_SECRET`.
 7. Record the standalone Production URL as the Mission Control link target. Mission Control should link directly to `https://<production-domain>/`; it should not link to an internal file route, a local address, or a Mission Control API path.
 
-No custom frontend build is required. `package.json` selects the Node 24 Function runtime, and the frontend assets remain same-origin with the API. The root page registers `service-worker.js` when supported; its versioned cache contains only the public shell and `offline.html`. Do not add API routes or private response URLs to that precache list.
+No custom frontend build is required. `package.json` selects the Node 24 Function runtime, and the frontend assets remain same-origin with the API. The root page registers `service-worker.js` when supported; its versioned cache contains the public shell assets, including `game-logic.js` with no role prompts, and `offline.html`. The role catalog remains server-only under `server/`; Vercel routing and the in-memory development server return HTTP 404 for `/server/*`. Never precache API routes or private response URLs.
 
 The manifest and service worker make installation a convenience, not a requirement. Test both installed and normal-tab modes. The offline fallback is deliberately not a local game mode: it explains that saved-game state must be reconciled with the server before play continues. If a future local-only Quick Play mode is added, keep it as a separate, explicitly labelled threat-modelled product surface.
 
@@ -139,4 +135,4 @@ Without `DATABASE_URL`, local tests can still pass, and `/api/health` can still 
 - The cleanup cron returns `401` or `503`: verify that Vercel has `CRON_SECRET` in the same environment and that the platform sends its `Authorization: Bearer` header. The endpoint intentionally fails closed when the secret is missing.
 - Mutations return `ORIGIN_MISMATCH`: compare the request origin and `APP_ORIGIN` character-for-character, including `http` versus `https`, port, and trailing slash.
 - A game returns `404` after refresh: bootstrap with `GET /api/games` and confirm the browser still has the owning session cookie. A foreign session is intentionally indistinguishable from an unknown game.
-- A nested API URL returns HTML: verify the Vercel Root Directory is `1 Projects/Spy game` and that the request is going to `/api/...`; `/api` routes must not be rewritten to the static shell.
+- A nested API URL returns HTML: verify the Vercel Root Directory is `.` and that the request is going to `/api/...`; `/api` routes must not be rewritten to the static shell.

@@ -17,6 +17,9 @@ const {
   validateRoundListOptions,
   encodeRoundCursor
 } = require('./validation.js');
+const { rolesForLocation } = require('./location-roles.js');
+
+const LOCATION_BOARD_SIZE = 24;
 
 class NotFoundError extends HttpError {
   constructor(message = 'Game not found.') {
@@ -312,6 +315,8 @@ function cardForCurrentPlayer(game) {
     location: isSpy ? null : String(field(round, 'locationName', 'location_name')),
     category: isSpy ? null : String(field(round, 'locationCategory', 'location_category'))
   };
+  const role = field(assignment, 'role', 'role');
+  if (!isSpy && typeof role === 'string' && role.length > 0) card.role = role;
   if (isSpy) {
     const partner = spyAssignments(round)
       .map((candidate) => findPlayer(players, field(candidate, 'playerId', 'player_id')))
@@ -393,6 +398,7 @@ function sanitizeGameSnapshot(record) {
     ? findPlayer(players, accusedPlayerId)
     : null;
   const secretMode = secretModeForRound(record, round);
+  const boardLocations = field(record, 'boardLocations', 'board_locations');
   const guessingPlayer = phase === 'spy-guess'
     ? findPlayer(
       players,
@@ -429,9 +435,23 @@ function sanitizeGameSnapshot(record) {
     const spies = spyAssignments(round)
       .map((assignment) => findPlayer(players, field(assignment, 'playerId', 'player_id')))
       .filter(Boolean);
+    const playerRoles = assignmentList(round)
+      .map((assignment) => {
+        const player = findPlayer(players, field(assignment, 'playerId', 'player_id'));
+        if (!player) return null;
+        const isSpy = Boolean(field(assignment, 'isSpy', 'is_spy'));
+        const role = field(assignment, 'role', 'role');
+        return {
+          player,
+          isSpy,
+          role: isSpy || typeof role !== 'string' || role.length === 0 ? null : role
+        };
+      })
+      .filter(Boolean);
     if (location !== undefined && location !== null) outcome.location = String(location);
     if (category !== undefined && category !== null) outcome.category = String(category);
     if (spies.length > 0) outcome.spyPlayers = spies;
+    if (playerRoles.some((entry) => entry.role !== null)) outcome.playerRoles = playerRoles;
     if (accusedPlayer) outcome.accusedPlayer = accusedPlayer;
     if (guess !== undefined && guess !== null) outcome.guess = String(guess);
     if (guesses.length > 0) outcome.guesses = guesses;
@@ -451,6 +471,9 @@ function sanitizeGameSnapshot(record) {
     currentPlayer,
     revealIndex,
     secretMode,
+    locationBoard: secretMode === 'deck' && Array.isArray(boardLocations)
+      ? boardLocations.slice()
+      : null,
     deadlineAt: isoOrNull(field(record, 'currentDeadlineAt', 'current_deadline_at'))
       || isoOrNull(field(round, 'deadlineAt', 'deadline_at')),
     accusedPlayer,
@@ -492,7 +515,7 @@ function sanitizeGameSummary(record) {
   return summary;
 }
 
-function chooseLocation(random, excludedLocationNames) {
+function chooseLocation(random, excludedLocationNames, boardLocations) {
   const source = typeof random === 'function' ? random : Math.random;
   const value = Number(source());
   const bounded = Number.isFinite(value) ? Math.max(0, Math.min(0.999999999, value)) : 0;
@@ -501,8 +524,13 @@ function chooseLocation(random, excludedLocationNames) {
       ? excludedLocationNames
       : excludedLocationNames ? [excludedLocationNames] : []
   );
-  const available = SpyGameLogic.LOCATION_DECK.filter((location) => !excluded.has(location.name));
-  const deck = available.length > 0 ? available : SpyGameLogic.LOCATION_DECK;
+  const sourceDeck = Array.isArray(boardLocations)
+    ? boardLocations
+      .map((name) => SpyGameLogic.LOCATION_DECK.find((location) => location.name === name))
+      .filter(Boolean)
+    : SpyGameLogic.LOCATION_DECK;
+  const available = sourceDeck.filter((location) => !excluded.has(location.name));
+  const deck = available.length > 0 ? available : sourceDeck;
   return deck[Math.floor(bounded * deck.length)];
 }
 
@@ -521,11 +549,13 @@ function buildRoundRecord({
     : secretModeForRecord({ secretMode });
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
-    : chooseLocation(random, excludedLocationName);
+    : chooseLocation(random, excludedLocationName, field(game, 'boardLocations', 'board_locations'));
+  const rolePrompts = mode === 'deck' ? rolesForLocation(location.name) : [];
   const dealt = SpyGameLogic.dealRound(
     players.map((player) => player.displayName),
     location,
-    random
+    random,
+    rolePrompts
   );
   const startedAt = resolveNow(now);
   return {
@@ -547,9 +577,10 @@ function buildRoundRecord({
     reason: null,
     startedAt,
     completedAt: null,
-    assignments: players.map((player) => ({
+    assignments: players.map((player, index) => ({
       playerId: player.id,
-      isSpy: dealt.spies.includes(player.displayName)
+      isSpy: dealt.spies.includes(player.displayName),
+      role: dealt.cards[index].role || null
     }))
   };
 }
@@ -565,10 +596,14 @@ function buildGameRecord({
 }) {
   const createdAt = resolveNow(now);
   const mode = secretModeForRecord({ secretMode });
+  const boardLocations = mode === 'custom'
+    ? null
+    : SpyGameLogic.pickBoard(SpyGameLogic.LOCATION_DECK, LOCATION_BOARD_SIZE, random);
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
-    : chooseLocation(random);
-  const dealt = SpyGameLogic.dealRound(players, location, random);
+    : chooseLocation(random, null, boardLocations);
+  const rolePrompts = mode === 'deck' ? rolesForLocation(location.name) : [];
+  const dealt = SpyGameLogic.dealRound(players, location, random, rolePrompts);
   const gameId = crypto.randomUUID();
   const roundId = crypto.randomUUID();
   const playerRecords = players.map((displayName, seat) => ({
@@ -576,9 +611,10 @@ function buildGameRecord({
     seat,
     displayName
   }));
-  const assignments = playerRecords.map((player) => ({
+  const assignments = playerRecords.map((player, index) => ({
     playerId: player.id,
-    isSpy: dealt.spies.includes(player.displayName)
+    isSpy: dealt.spies.includes(player.displayName),
+    role: dealt.cards[index].role || null
   }));
 
   return {
@@ -586,6 +622,7 @@ function buildGameRecord({
     sessionId,
     timerSeconds,
     secretMode: mode,
+    boardLocations,
     roundLimit: 5,
     currentRoundNumber: 1,
     currentPhase: 'reveal',
@@ -996,14 +1033,18 @@ async function applyGameAction({
       if (input.type === 'guess') {
         if (phase !== 'spy-guess') throw invalidPhase('guess', phase, ['spy-guess']);
         const roundSecretMode = secretModeForRound(game, round);
+        const boardLocations = field(game, 'boardLocations', 'board_locations');
         const selectedLocation = roundSecretMode === 'deck'
-          ? SpyGameLogic.LOCATION_DECK.find((location) => location.name === input.location)
+          ? SpyGameLogic.LOCATION_DECK.find((location) => (
+            location.name === input.location
+            && (!Array.isArray(boardLocations) || boardLocations.includes(location.name))
+          ))
           : null;
         const guessValue = roundSecretMode === 'custom'
           ? normalizeCustomSecret(input.location, 'location')
           : selectedLocation && selectedLocation.name;
         if (!guessValue) {
-          throw validationError('The guessed location is not in the location deck.', 400, {
+          throw validationError('The guessed location is not available for this game.', 400, {
             field: 'location'
           });
         }

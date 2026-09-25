@@ -82,58 +82,106 @@
     var players = snapshot && Array.isArray(snapshot.players) ? snapshot.players : [];
     var revealIndex = snapshot ? Number(snapshot.revealIndex) || 0 : 0;
     var player = snapshot && snapshot.currentPlayer ? snapshot.currentPlayer : players[revealIndex];
+    var nextPlayer = players[revealIndex + 1] || null;
     var card = state.visibleCard;
     var cardPlayerId = card && card.player && card.player.id;
     var customMode = snapshot && snapshot.secretMode === 'custom';
+    var hasLocationBoard = Boolean(!customMode && snapshot
+      && Array.isArray(snapshot.locationBoard)
+      && snapshot.locationBoard.length);
     var isCardVisible = Boolean(player && card && cardPlayerId === player.id);
+    var isHandoffComplete = Boolean(state.cardHidden && !isCardVisible);
+    var currentStep = isCardVisible || isHandoffComplete ? 'pass' : 'reveal';
+    var hideActionLabel;
 
     if (!player) return;
+    hideActionLabel = nextPlayer
+      ? 'Hide & pass to ' + nextPlayer.displayName
+      : 'Hide & start the round';
 
-    refs.revealName.textContent = player.displayName;
-    if (refs.revealAvatar) {
-      refs.revealAvatar.src = 'assets/app-icon-192.png';
-      refs.revealAvatar.alt = '';
+    if (refs.revealTitle) {
+      refs.revealTitle.textContent = isCardVisible
+        ? player.displayName + '’s private card'
+        : isHandoffComplete
+          ? nextPlayer ? 'Passing to ' + nextPlayer.displayName : 'Starting the round'
+          : 'Pass the phone to ' + player.displayName;
+    }
+    if (refs.revealInstruction) {
+      refs.revealInstruction.textContent = isHandoffComplete
+        ? nextPlayer
+          ? 'The card is hidden. Passing the phone to ' + nextPlayer.displayName + '.'
+          : 'The card is hidden. Starting the round.'
+        : 'Only ' + player.displayName + ' should look at this card.';
     }
     if (refs.revealProgress) {
       refs.revealProgress.textContent = 'Card ' + Math.min(revealIndex + 1, players.length || 1) + ' of ' + (players.length || 1);
+    }
+    if (refs.revealSteps) {
+      Array.prototype.forEach.call(refs.revealSteps, function (step) {
+        var isCurrent = step.getAttribute('data-reveal-step') === currentStep;
+        step.classList.toggle('is-current', isCurrent);
+        if (isCurrent) step.setAttribute('aria-current', 'step');
+        else step.removeAttribute('aria-current');
+      });
     }
 
     refs.revealCard.removeAttribute('data-revealed');
     if (isCardVisible) refs.revealCard.setAttribute('data-revealed', 'true');
     if (refs.revealCardFace) refs.revealCardFace.removeAttribute('data-role');
-    refs.revealAction.dataset.peeking = String(Boolean(state.peeking));
+    refs.revealAction.dataset.revealing = String(Boolean(state.revealPending));
+    refs.revealAction.disabled = Boolean(state.mutationBusy || state.revealPending || state.cardHidden);
 
     if (state.privacyLocked) {
       if (refs.privacyCover) refs.privacyCover.hidden = false;
       if (refs.revealActionLabel) refs.revealActionLabel.textContent = 'Reveal card';
       refs.revealAction.removeAttribute('data-revealed');
-      refs.revealAction.setAttribute('aria-pressed', 'false');
-      if (refs.holdNote) refs.holdNote.textContent = 'Screen left open. Make sure only ' + player.displayName + ' is looking, then hold again.';
+      refs.revealAction.removeAttribute('aria-pressed');
+      refs.revealAction.setAttribute('aria-label', 'Reveal ' + player.displayName + '’s card');
+      if (refs.revealNote) refs.revealNote.textContent = 'The screen was cleared. Make sure only ' + player.displayName + ' is looking, then reveal the card.';
       return;
     }
 
     if (refs.privacyCover) refs.privacyCover.hidden = true;
+    refs.revealSecret.removeAttribute('data-role');
 
     if (!isCardVisible) {
-      refs.revealLabel.textContent = 'Your card is ready';
-      refs.revealSecret.textContent = state.cardsSeen ? 'Read it? Pass it on.' : 'Hold to reveal.';
-      refs.revealHint.textContent = 'Only ' + player.displayName + ' should see this.';
+      refs.revealLabel.textContent = isHandoffComplete ? 'Card hidden' : state.revealPending ? 'Preparing your card' : 'Private card';
+      refs.revealSecret.textContent = isHandoffComplete
+        ? nextPlayer ? 'Passing the phone to ' + nextPlayer.displayName + '…' : 'Starting the round…'
+        : state.revealPending ? 'Loading your card…' : 'Reveal your card when ready.';
+      refs.revealHint.textContent = isHandoffComplete
+        ? nextPlayer
+          ? nextPlayer.displayName + ' can reveal when the handoff completes.'
+          : 'Everyone can look up when the round starts.'
+        : 'Only ' + player.displayName + ' should see this.';
       if (refs.revealArt) {
         refs.revealArt.src = 'assets/pass-phone.png';
         refs.revealArt.alt = '';
       }
-      if (refs.revealActionLabel) refs.revealActionLabel.textContent = state.cardsSeen ? 'Hide card and pass' : 'Hold to reveal';
-      refs.revealAction.setAttribute('aria-label', state.cardsSeen
-        ? 'Hide the card and pass the phone'
-        : 'Hold to reveal the card for ' + player.displayName);
-      refs.revealAction.setAttribute('aria-pressed', 'false');
-      if (refs.holdNote) {
-        refs.holdNote.textContent = state.timedReveal
-          ? 'Auto-hiding in a few seconds. Tap the button to hide it now.'
-          : state.cardsSeen
-            ? 'Card is logged. Pass the phone on.'
-            : 'Press and hold while you read. Let go and it hides.';
+      if (refs.revealActionLabel) {
+        refs.revealActionLabel.textContent = isHandoffComplete
+          ? state.mutationBusy
+            ? nextPlayer ? 'Passing…' : 'Starting…'
+            : 'Card hidden'
+          : state.revealPending
+            ? 'Loading card…'
+            : 'I’m ' + player.displayName + ' — reveal card';
       }
+      refs.revealAction.setAttribute('aria-label', isHandoffComplete
+        ? state.mutationBusy
+          ? nextPlayer ? 'Passing to ' + nextPlayer.displayName : 'Starting the round'
+          : 'Card hidden'
+        : state.revealPending
+          ? 'Loading ' + player.displayName + '’s card'
+          : 'Reveal ' + player.displayName + '’s card');
+      refs.revealAction.removeAttribute('aria-pressed');
+      if (refs.revealNote) refs.revealNote.textContent = isHandoffComplete
+        ? nextPlayer
+          ? 'The handoff to ' + nextPlayer.displayName + ' is not complete yet.'
+          : 'The round is not ready until the handoff completes.'
+        : state.revealPending
+          ? 'Your private card is loading.'
+          : 'Pass the phone to ' + player.displayName + ' before revealing.';
       return;
     }
 
@@ -145,24 +193,29 @@
     }
     refs.revealSecret.textContent = card.isSpy
       ? 'You’re the spy.'
-      : (customMode ? 'Secret: ' : 'Location: ') + card.location;
+      : customMode
+        ? 'Secret: ' + card.location
+        : typeof card.role === 'string' && card.role.length > 0
+          ? card.location + ' — you’re ' + card.role + '.'
+          : 'Location: ' + card.location;
     refs.revealSecret.setAttribute('data-role', card.isSpy ? 'spy' : 'agent');
     refs.revealHint.textContent = card.isSpy
-      ? (card.partner
-        ? 'You’re working with ' + card.partner.displayName + '. Blend in and let go of the button.'
-        : 'Blend in and let go of the button.')
+      ? (hasLocationBoard
+        ? card.partner
+          ? 'You’re working with ' + card.partner.displayName + '. The location is on the board — listen and narrow it down.'
+          : 'The location is on the board — listen and narrow it down.'
+        : card.partner
+          ? 'You’re working with ' + card.partner.displayName + '. Keep it private, then hide the card.'
+          : 'Keep it private, then hide the card.')
       : (customMode
-        ? 'Keep it secret. Let go and it hides.'
-        : 'Category: ' + card.category + '. Let go and it hides.');
-    if (refs.revealActionLabel) {
-      refs.revealActionLabel.textContent = state.timedReveal
-        ? 'Hide card now'
-        : 'Let go to hide';
-    }
-    refs.revealAction.setAttribute('aria-pressed', 'true');
-    if (refs.holdNote) refs.holdNote.textContent = state.timedReveal
-      ? 'Auto-hiding in a few seconds. Tap the button to hide it now.'
-      : 'Keep holding to read. Let go to hide.';
+        ? 'Keep it secret, then hide the card.'
+        : 'Category: ' + card.category + '. Hide the card before passing the phone.');
+    if (refs.revealActionLabel) refs.revealActionLabel.textContent = hideActionLabel;
+    refs.revealAction.setAttribute('aria-label', hideActionLabel);
+    refs.revealAction.removeAttribute('aria-pressed');
+    if (refs.revealNote) refs.revealNote.textContent = nextPlayer
+      ? 'Hide the card to pass the phone to ' + nextPlayer.displayName + '.'
+      : 'Hide the card to start the round.';
   }
 
   function renderRound(ctx) {
@@ -171,12 +224,23 @@
     var snapshot = state.snapshot || {};
     var players = Array.isArray(snapshot.players) ? snapshot.players : [];
     var customMode = snapshot.secretMode === 'custom';
+    var locationBoard = Array.isArray(snapshot.locationBoard) ? snapshot.locationBoard : [];
     var question = state.question || null;
 
     refs.roundTitle.textContent = 'Ask your questions';
     refs.roundLocationHint.textContent = customMode
       ? 'Everyone else knows the secret. The spy doesn’t.'
       : 'Everyone else knows the location. The spy doesn’t.';
+    var hasLocationBoard = !customMode && locationBoard.length > 0;
+    if (refs.locationBoard) refs.locationBoard.hidden = !hasLocationBoard;
+    if (refs.locationBoardList) {
+      clearList(refs.locationBoardList);
+      if (hasLocationBoard) {
+        locationBoard.forEach(function (location) {
+          refs.locationBoardList.appendChild(createElement(ctx, 'li', 'location-board-item', location));
+        });
+      }
+    }
 
     clearList(refs.guessCallerList);
     players.forEach(function (player, index) {
@@ -242,12 +306,17 @@
   function renderGuess(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
-    var player = state.snapshot && state.snapshot.guessingPlayer;
-    var customMode = state.snapshot && state.snapshot.secretMode === 'custom';
+    var snapshot = state.snapshot || {};
+    var player = snapshot.guessingPlayer;
+    var customMode = snapshot.secretMode === 'custom';
     var filter = String(state.guessFilter || '').trim().toLowerCase();
     var deck = ctx.logic.LOCATION_DECK || [];
-    var matches = deck.filter(function (place) {
-      return place && place.name && (!filter || place.name.toLowerCase().indexOf(filter) !== -1);
+    var locations = Array.isArray(snapshot.locationBoard)
+      ? snapshot.locationBoard
+      : customMode ? [] : deck;
+    var matches = locations.filter(function (place) {
+      var name = typeof place === 'string' ? place : place && place.name;
+      return name && (!filter || name.toLowerCase().indexOf(filter) !== -1);
     });
 
     refs.guessTurnLabel.textContent = player
@@ -264,13 +333,14 @@
         refs.guessList.appendChild(empty);
       }
       matches.forEach(function (place) {
+        var name = typeof place === 'string' ? place : place.name;
         var item = createElement(ctx, 'li');
-        var button = createElement(ctx, 'button', 'choice-button', place.name);
+        var button = createElement(ctx, 'button', 'choice-button', name);
         button.type = 'button';
         button.setAttribute('data-choice-action', 'guess');
-        button.setAttribute('data-choice-value', place.name);
-        button.setAttribute('aria-label', 'Guess ' + place.name);
-        button.setAttribute('aria-pressed', String(place.name === state.pendingGuessLocation));
+        button.setAttribute('data-choice-value', name);
+        button.setAttribute('aria-label', 'Guess ' + name);
+        button.setAttribute('aria-pressed', String(name === state.pendingGuessLocation));
         button.disabled = state.mutationBusy;
         item.appendChild(button);
         refs.guessList.appendChild(item);
@@ -323,6 +393,7 @@
     var refs = ctx.refs;
     var outcome = state.snapshot && state.snapshot.outcome || {};
     var spies = Array.isArray(outcome.spyPlayers) ? outcome.spyPlayers : [];
+    var playerRoles = Array.isArray(outcome.playerRoles) ? outcome.playerRoles : [];
     var session = outcome.session || {};
     var roundPoints = Array.isArray(outcome.roundPoints) ? outcome.roundPoints : [];
     var leaderboard = Array.isArray(session.leaderboard) ? session.leaderboard : [];
@@ -359,6 +430,29 @@
       item.appendChild(createElement(ctx, 'span', null, spy && spy.displayName ? spy.displayName : String(spy)));
       refs.resultSpies.appendChild(item);
     });
+
+    if (refs.resultRolesPanel) refs.resultRolesPanel.hidden = playerRoles.length === 0;
+    if (refs.resultRoles) {
+      clearList(refs.resultRoles);
+      playerRoles.forEach(function (entry) {
+        var player = entry && entry.player;
+        var index = players.findIndex(function (candidate) {
+          return candidate.id === (player && player.id);
+        });
+        var item = createElement(ctx, 'li', 'result-role-item');
+        var roleLabel = entry && entry.isSpy
+          ? 'Spy'
+          : entry && typeof entry.role === 'string' && entry.role.length > 0
+            ? entry.role
+            : 'No role assigned';
+
+        item.appendChild(createAvatar(ctx, index < 0 ? 0 : index));
+        item.appendChild(createElement(ctx, 'span', 'result-role-player',
+          player && player.displayName ? player.displayName : 'Player'));
+        item.appendChild(createElement(ctx, 'span', 'result-role-value', roleLabel));
+        refs.resultRoles.appendChild(item);
+      });
+    }
 
     refs.sessionScoreStatus.textContent = session.isFinal
       ? 'Five rounds down. ' + (session.winner && session.winner.length === 1
@@ -496,7 +590,7 @@
     if (refs.cancelGuessButton) refs.cancelGuessButton.disabled = state.mutationBusy;
     if (refs.guessInput) refs.guessInput.disabled = state.mutationBusy;
     if (refs.guessSearchInput) refs.guessSearchInput.disabled = state.mutationBusy;
-    if (refs.revealAction) refs.revealAction.disabled = state.mutationBusy;
+    if (refs.revealAction) refs.revealAction.disabled = state.mutationBusy || state.revealPending || state.cardHidden;
     if (refs.endRoundButton) refs.endRoundButton.disabled = state.mutationBusy;
     if (refs.confirmEndRoundButton) refs.confirmEndRoundButton.disabled = state.mutationBusy;
     if (refs.cancelEndRoundButton) refs.cancelEndRoundButton.disabled = state.mutationBusy;

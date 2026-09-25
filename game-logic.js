@@ -32,7 +32,6 @@
     { name: 'Supermarket', category: 'Public places' },
     { name: 'Train station', category: 'Travel' },
     { name: 'Wedding', category: 'Events' },
-
     { name: 'Amusement park', category: 'Entertainment' },
     { name: 'Animal shelter', category: 'Services' },
     { name: 'Arcade', category: 'Entertainment' },
@@ -77,6 +76,7 @@
   ];
 
   LOCATION_DECK.forEach(function (location) {
+
     Object.freeze(location);
   });
   Object.freeze(LOCATION_DECK);
@@ -130,10 +130,23 @@
     return result;
   }
 
-  function dealRound(names, location, random) {
+  function pickBoard(deck, size, random) {
+    var locations = Array.isArray(deck) ? deck : [];
+    var boardSize = Number(size);
+    if (!Number.isFinite(boardSize) || boardSize < 0) boardSize = 0;
+
+    return shuffle(locations, random)
+      .slice(0, Math.floor(boardSize))
+      .map(function (location) { return location.name; })
+      .sort();
+  }
+
+  function dealRound(names, location, random, rolePrompts) {
     var spyCount = getSpyCount(names.length);
     var shuffledNames = shuffle(names, random);
     var spies = shuffledNames.slice(0, spyCount);
+    var roleDeck = Array.isArray(rolePrompts) ? shuffle(rolePrompts, random) : [];
+    var roleIndex = 0;
     var cards = names.map(function (player) {
       var isSpy = spies.indexOf(player) !== -1;
       var card = {
@@ -142,6 +155,11 @@
         location: isSpy ? null : location.name,
         category: isSpy ? null : location.category
       };
+
+      if (!isSpy && roleDeck.length > 0) {
+        card.role = roleDeck[roleIndex % roleDeck.length];
+        roleIndex += 1;
+      }
 
       if (isSpy && spies.length > 1) {
         card.partner = spies.find(function (spy) { return spy !== player; }) || null;
@@ -373,6 +391,7 @@
     validatePlayers: validatePlayers,
     getSpyCount: getSpyCount,
     shuffle: shuffle,
+    pickBoard: pickBoard,
     dealRound: dealRound,
     formatTime: formatTime,
     resolveAccusation: resolveAccusation,
