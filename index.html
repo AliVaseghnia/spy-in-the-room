@@ -597,11 +597,10 @@
       </div>
     </dialog>
 
-    <!-- The ?v= query makes browsers fail fast when an older cache-first
-         service worker is still controlling the page: pre-v13 workers only
-         intercept same-path requests without a query string, so these land
-         on the network. v13+ assets are network-first and never need a bump. -->
-    <script src="game-logic.js?v=15"></script>
+    <!-- The ?v= query invalidates browser HTTP caches after a public asset changes.
+         Pre-v13 service workers only intercept same-path requests without a
+         query; v13+ assets are network-first. -->
+    <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
     <script src="game-view.js?v=17"></script>

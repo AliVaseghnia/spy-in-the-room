@@ -67,6 +67,15 @@ const MIME = {
 function serveStatic(response, pathname) {
   let relativePath = decodeURIComponent(pathname);
   if (relativePath === '/') relativePath = '/index.html';
+  const normalizedPath = path.normalize(relativePath).toLowerCase();
+  if (normalizedPath === '/server' || normalizedPath.startsWith('/server/')) {
+    response.statusCode = 404;
+    response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    response.setHeader('Cache-Control', 'no-store');
+    response.end('Not found');
+    return;
+  }
+
   const filePath = path.join(PROJECT_ROOT, relativePath);
 
   if (!filePath.startsWith(PROJECT_ROOT)) {

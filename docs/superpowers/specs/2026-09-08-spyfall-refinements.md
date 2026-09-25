@@ -16,6 +16,10 @@ two-spy, accusation, and session loops explicit.
 - Custom-secret rounds have no location roles. Before the result, general
   snapshots omit all roles; each non-spy’s role appears only on their private
   card. The result identifies non-spy roles and labels spies as “Spy”.
+
+- The built-in role catalog is server-only. The browser's location deck
+  exposes names and categories only; role prompts never enter public assets
+  or client caches.
 - Answer in character if you like; don’t say your role outright.
 - The question phase is verbal. Ask one question, let the answerer ask next,
   do not ask follow-up questions, and do not immediately ask the previous

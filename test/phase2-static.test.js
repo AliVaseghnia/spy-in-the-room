@@ -40,11 +40,13 @@ test('project metadata pins current Node runtime, an exact Neon Postgres driver,
   assert.equal(fs.existsSync(path.join(PROJECT_ROOT, 'package-lock.json')), true);
 });
 
-test('Vercel packaging leaves every nested API path as a function route', () => {
+test('Vercel blocks server source files and preserves nested API function routing', () => {
   const vercelJson = parseProjectJson('vercel.json');
 
   assert.equal(vercelJson.rewrites, undefined, 'API paths must not be rewritten to the shell');
-  assert.equal(vercelJson.routes, undefined, 'implicit API routing must remain intact');
+  assert.deepEqual(vercelJson.routes, [
+    { src: '^/server(?:/.*)?$', status: 404 }
+  ]);
   assert.ok(vercelJson.functions, 'Node functions must be configured explicitly');
   const apiFunctionConfig = vercelJson.functions['api/**/*.js'];
   assert.ok(apiFunctionConfig, 'nested API functions must be matched');

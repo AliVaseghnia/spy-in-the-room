@@ -210,6 +210,21 @@ test('a spy can call for a guess before the timer ends', async () => {
   assert.equal(called.data.guessingPlayer.id, spyId);
 });
 
+test('custom secrets matching deck names never receive deck roles', async () => {
+  const players = ['Ana', 'Bea', 'Cy', 'Dee'];
+  const game = await createGameWithRevealedCards(players, {
+    secretMode: 'custom',
+    customSecret: 'Airport'
+  });
+  const nonSpyCards = game.cards.filter((card) => !card.isSpy);
+  const assignments = game.store.games.get(game.created.gameId).rounds[0].assignments;
+
+  assert.equal(nonSpyCards.length, 3);
+  assert.ok(nonSpyCards.every((card) => card.location === 'Airport' && card.category === 'Custom'));
+  assert.ok(nonSpyCards.every((card) => !Object.prototype.hasOwnProperty.call(card, 'role')));
+  assert.ok(assignments.every((assignment) => assignment.role === null));
+});
+
 test('custom two-spy rounds accept arbitrary normalized guesses until one is correct', async () => {
   const players = Array.from({ length: 9 }, (_, index) => `Player ${index + 1}`);
   const game = await createGameWithRevealedCards(players, {

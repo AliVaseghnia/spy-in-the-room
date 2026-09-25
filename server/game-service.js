@@ -17,6 +17,7 @@ const {
   validateRoundListOptions,
   encodeRoundCursor
 } = require('./validation.js');
+const { rolesForLocation } = require('./location-roles.js');
 
 const LOCATION_BOARD_SIZE = 24;
 
@@ -549,10 +550,12 @@ function buildRoundRecord({
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
     : chooseLocation(random, excludedLocationName, field(game, 'boardLocations', 'board_locations'));
+  const rolePrompts = mode === 'deck' ? rolesForLocation(location.name) : [];
   const dealt = SpyGameLogic.dealRound(
     players.map((player) => player.displayName),
     location,
-    random
+    random,
+    rolePrompts
   );
   const startedAt = resolveNow(now);
   return {
@@ -599,7 +602,8 @@ function buildGameRecord({
   const location = mode === 'custom'
     ? { name: normalizeCustomSecret(customSecret), category: 'Custom' }
     : chooseLocation(random, null, boardLocations);
-  const dealt = SpyGameLogic.dealRound(players, location, random);
+  const rolePrompts = mode === 'deck' ? rolesForLocation(location.name) : [];
+  const dealt = SpyGameLogic.dealRound(players, location, random, rolePrompts);
   const gameId = crypto.randomUUID();
   const roundId = crypto.randomUUID();
   const playerRecords = players.map((displayName, seat) => ({

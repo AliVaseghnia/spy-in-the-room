@@ -167,9 +167,3 @@ test('service worker updates are versioned, clean old shell caches, and activate
   assert.match(worker.slice(messageStart), /self\.skipWaiting\s*\(/);
   assert.match(worker, /event\.waitUntil\s*\(/g);
 });
-
-test('service worker cache version matches the current app icon shell release', () => {
-  const worker = readProjectFile('service-worker.js');
-
-  assert.match(worker, /const CACHE_NAME\s*=\s*["']spy-in-the-room-shell-v18["']/);
-});

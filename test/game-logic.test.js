@@ -72,20 +72,25 @@ test('dealRound assigns the configured number of spies and preserves roster orde
   assert.equal(round.cards.find(card => card.isSpy).location, null);
   assert.equal(round.cards.find(card => card.isSpy).category, null);
 });
-test('dealRound assigns unique roles until the role list cycles and leaves spies unassigned', () => {
+test('dealRound assigns unique supplied roles until the role list cycles and leaves spies unassigned', () => {
   const players = Array.from({ length: 12 }, (_, index) => `Player ${index + 1}`);
   const location = LOCATION_DECK[0];
-  const round = dealRound(players, location, () => 0);
+  const rolePrompts = Array.from({ length: 7 }, (_, index) => `Role ${index + 1}`);
+  const round = dealRound(players, location, () => 0, rolePrompts);
   const spyCards = round.cards.filter(card => card.isSpy);
   const nonSpyCards = round.cards.filter(card => !card.isSpy);
   const assignedRoles = nonSpyCards.map(card => card.role);
 
   assert.equal(nonSpyCards.length, 10);
   assert.ok(assignedRoles.every(role => typeof role === 'string' && role.length > 0));
-  assert.equal(new Set(assignedRoles.slice(0, location.roles.length)).size, location.roles.length);
   assert.deepEqual(
-    assignedRoles.slice(location.roles.length),
-    assignedRoles.slice(0, assignedRoles.length % location.roles.length)
+    assignedRoles.slice(0, rolePrompts.length).slice().sort(),
+    rolePrompts.slice().sort()
+  );
+  assert.equal(new Set(assignedRoles.slice(0, rolePrompts.length)).size, rolePrompts.length);
+  assert.deepEqual(
+    assignedRoles.slice(rolePrompts.length),
+    assignedRoles.slice(0, assignedRoles.length % rolePrompts.length)
   );
   assert.ok(spyCards.every(card => !Object.prototype.hasOwnProperty.call(card, 'role')));
 

@@ -4,8 +4,9 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const { LOCATION_DECK } = require('../game-logic.js');
+const { LOCATION_ROLE_CATALOG } = require('../server/location-roles.js');
 
-const EXPECTED_LOCATION_KEYS = ['category', 'name', 'roles'];
+const EXPECTED_LOCATION_KEYS = ['category', 'name'];
 const EXPECTED_LOCATION_INVENTORY = [
   ['Airport', 'Travel'],
   ['Bank', 'Workplaces'],
@@ -106,16 +107,22 @@ test('keeps every location clueable, family-safe, and within the public shape', 
 });
 
 test('each location has at least seven concise, distinct, location-free roles', () => {
+  assert.deepEqual(
+    Object.keys(LOCATION_ROLE_CATALOG).sort(),
+    LOCATION_DECK.map((location) => location.name).sort()
+  );
+
   LOCATION_DECK.forEach((location) => {
-    assert.ok(Array.isArray(location.roles), `${location.name} must have role prompts`);
-    assert.ok(location.roles.length >= 7, `${location.name} needs at least seven roles`);
+    const roles = LOCATION_ROLE_CATALOG[location.name];
+    assert.ok(Array.isArray(roles), `${location.name} must have private role prompts`);
+    assert.ok(roles.length >= 7, `${location.name} needs at least seven roles`);
     assert.equal(
-      new Set(location.roles.map((role) => role.toLowerCase())).size,
-      location.roles.length,
+      new Set(roles.map((role) => role.toLowerCase())).size,
+      roles.length,
       `${location.name} roles must be unique`
     );
 
-    location.roles.forEach((role) => {
+    roles.forEach((role) => {
       assert.equal(typeof role, 'string');
       assert.ok(role.length >= 2 && role.length <= 32, `${role} must be 2–32 characters`);
       assert.equal(role, role.trim(), `${role} must not have edge whitespace`);
@@ -130,24 +137,25 @@ test('each location has at least seven concise, distinct, location-free roles', 
   });
 });
 
-test('role prompts are unique across the entire deck', () => {
+test('role prompts are unique across the entire private catalog', () => {
   const roleOwners = new Map();
 
-  LOCATION_DECK.forEach((location) => {
-    location.roles.forEach((role) => {
+  Object.entries(LOCATION_ROLE_CATALOG).forEach(([locationName, roles]) => {
+    roles.forEach((role) => {
       const normalizedRole = role.toLowerCase();
       assert.equal(
         roleOwners.has(normalizedRole),
         false,
-        `${role} appears in both ${roleOwners.get(normalizedRole)} and ${location.name}`
+        `${role} appears in both ${roleOwners.get(normalizedRole)} and ${locationName}`
       );
-      roleOwners.set(normalizedRole, location.name);
+      roleOwners.set(normalizedRole, locationName);
     });
   });
 });
 
-test('freezes the deck and each public location record', () => {
+test('freezes public locations and private role data', () => {
   assert.ok(Object.isFrozen(LOCATION_DECK));
   assert.ok(LOCATION_DECK.every((location) => Object.isFrozen(location)));
-  assert.ok(LOCATION_DECK.every((location) => Object.isFrozen(location.roles)));
+  assert.ok(Object.isFrozen(LOCATION_ROLE_CATALOG));
+  assert.ok(Object.values(LOCATION_ROLE_CATALOG).every((roles) => Object.isFrozen(roles)));
 });
