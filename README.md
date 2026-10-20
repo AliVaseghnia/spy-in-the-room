@@ -39,6 +39,9 @@ built to feel like a game you reach for again:
   exactly three words*, *nobody may use the word "the"*.
 - **A round that looks alive.** A draining timer ring, spy count, urgency
   colour, and haptic/audio ticks at one minute and ten seconds.
+- **It looks like a game, not a website.** A noir case-file direction — ink,
+  brass, and a rubber stamp — with a seat board, a sealed dossier card, and a
+  five-step tracker that keeps every phase readable at a glance.
 - **Players are tokens.** Everyone gets a stable avatar and colour that
   follows them through the handoff, the vote, and the scoreboard.
 - **A result worth watching.** A stamp hits, the location, spy team, and
@@ -73,7 +76,7 @@ built to feel like a game you reach for again:
 | Rounds | 3 / 5 / 8 minute timers, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
 | Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
-| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics |
+| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker |
 | Platform | Installable PWA shell, offline reconnect fallback, mobile-first responsive layout |
 | Accessibility | Full keyboard flow, live-region announcements, focus management, `prefers-reduced-motion` support |
 | Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never the true location, spy flags, or roles |

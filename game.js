@@ -35,6 +35,16 @@
     result: 'Round complete'
   };
   var VIEW_PHASES = ['resume', 'setup', 'reveal', 'round', 'accuse', 'guess', 'result'];
+  // The header tracker shows the five visible steps of a game.
+  var PHASE_STEPS = {
+    setup: 1,
+    resume: 1,
+    reveal: 2,
+    round: 3,
+    accuse: 4,
+    'spy-guess': 4,
+    result: 5
+  };
 
   var state = {
     snapshot: null,
@@ -123,6 +133,9 @@
       playerForm: getElement('player-form'),
       playerNameInput: getElement('player-name-input'),
       playerChips: getElement('player-chips'),
+      seatStrip: getElement('seat-strip'),
+      revealSeat: getElement('reveal-seat'),
+      phaseStepper: getElement('phase-stepper'),
       playerCount: getElement('player-count'),
       playerEmptyState: getElement('player-empty-state'),
       playerError: getElement('player-error'),
@@ -1005,6 +1018,7 @@
       refs: refs,
       state: state,
       defaultTimerSeconds: DEFAULT_TIMER_SECONDS,
+      maxPlayers: MAX_PLAYERS,
       resumePhaseLabels: RESUME_PHASE_LABELS,
       avatarFor: logic.avatarForIndex,
       updateSetupControls: updateSetupControls,
@@ -1012,6 +1026,18 @@
       closeAccusationDialog: closeAccusationDialog,
       closeGuessDialog: closeGuessDialog
     };
+  }
+
+  function renderPhaseStepper(phase) {
+    var stepper = refs.phaseStepper;
+    if (!stepper) return;
+
+    var current = PHASE_STEPS[phase] || 1;
+    Array.prototype.forEach.call(stepper.children, function (item) {
+      var step = Number(item.getAttribute('data-step')) || 0;
+      item.classList.toggle('is-current', step === current);
+      item.classList.toggle('is-done', step < current);
+    });
   }
 
   function render() {
@@ -1057,6 +1083,7 @@
 
     if (activeView) activeView.hidden = false;
     refs.phaseLabel.textContent = PHASE_LABELS[phase] || 'Get ready';
+    renderPhaseStepper(phase);
     refs.roundStatus.textContent = state.snapshot && state.snapshot.players
       ? 'Round ' + state.snapshot.roundNumber + ' / 5 · ' + state.snapshot.players.length + ' players'
       : '4 to 12 players';
@@ -2104,6 +2131,9 @@
   function bindEvents() {
     if (refs.howToPlayButton && refs.howToPlayDialog && refs.closeHowToPlayButton) {
       refs.howToPlayButton.addEventListener('click', openHowToPlay);
+      Array.prototype.forEach.call(documentRef.querySelectorAll('[data-open-how-to-play]'), function (trigger) {
+        trigger.addEventListener('click', openHowToPlay);
+      });
       refs.closeHowToPlayButton.addEventListener('click', closeHowToPlay);
       refs.howToPlayDialog.addEventListener('cancel', function (event) {
         event.preventDefault();

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#10161e">
+    <meta name="theme-color" content="#080c13">
     <link rel="icon" href="assets/app-icon-64.png" type="image/png">
     <link rel="apple-touch-icon" href="assets/app-icon-180.png">
     <link rel="manifest" href="manifest.webmanifest">
@@ -12,14 +12,16 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=17">
+    <link rel="stylesheet" href="styles.css?v=18">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
     <div id="app" class="app-shell">
       <header class="site-header">
         <a class="brand" href="./" aria-label="Spy in the Room home">
-          <img class="brand-mark" src="assets/app-icon-64.png" alt="" aria-hidden="true">
+          <span class="brand-badge">
+            <img class="brand-mark" src="assets/app-icon-64.png" alt="" aria-hidden="true">
+          </span>
           <span class="brand-name">SPY IN THE ROOM</span>
         </a>
 
@@ -41,9 +43,20 @@
         <div class="header-actions">
           <button id="how-to-play-button" class="button button-secondary button-small" type="button" aria-haspopup="dialog" aria-controls="how-to-play-dialog">Rules</button>
           <button id="settings-button" class="button button-secondary button-small button-icon" type="button" aria-haspopup="dialog" aria-controls="settings-dialog" aria-label="Settings">
-            <span aria-hidden="true">⚙</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path>
+              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.1 13.9a1.5 1.5 0 0 0 .3 1.65l.05.05a1.8 1.8 0 1 1-2.55 2.55l-.05-.05a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.9 1.37V20a1.8 1.8 0 1 1-3.6 0v-.1a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.65.3l-.05.05a1.8 1.8 0 1 1-2.55-2.55l.05-.05a1.5 1.5 0 0 0 .3-1.65 1.5 1.5 0 0 0-1.37-.9H4a1.8 1.8 0 1 1 0-3.6h.1a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.65l-.05-.05a1.8 1.8 0 1 1 2.55-2.55l.05.05a1.5 1.5 0 0 0 1.65.3h.07a1.5 1.5 0 0 0 .9-1.37V4a1.8 1.8 0 1 1 3.6 0v.1a1.5 1.5 0 0 0 .9 1.37 1.5 1.5 0 0 0 1.65-.3l.05-.05a1.8 1.8 0 1 1 2.55 2.55l-.05.05a1.5 1.5 0 0 0-.3 1.65v.07a1.5 1.5 0 0 0 1.37.9H20a1.8 1.8 0 1 1 0 3.6h-.1a1.5 1.5 0 0 0-1.37.9Z"></path>
+            </svg>
           </button>
         </div>
+
+        <ol class="phase-stepper" id="phase-stepper" aria-label="Game progress">
+          <li class="phase-step" data-step="1"><span class="phase-step-dot" aria-hidden="true">1</span><span class="phase-step-name">Setup</span></li>
+          <li class="phase-step" data-step="2"><span class="phase-step-dot" aria-hidden="true">2</span><span class="phase-step-name">Deal</span></li>
+          <li class="phase-step" data-step="3"><span class="phase-step-dot" aria-hidden="true">3</span><span class="phase-step-name">Ask</span></li>
+          <li class="phase-step" data-step="4"><span class="phase-step-dot" aria-hidden="true">4</span><span class="phase-step-name">Vote</span></li>
+          <li class="phase-step" data-step="5"><span class="phase-step-dot" aria-hidden="true">5</span><span class="phase-step-name">Reveal</span></li>
+        </ol>
       </header>
 
       <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -55,6 +68,16 @@
               <p class="eyebrow">A pass-the-phone game</p>
               <h1 id="page-title">Someone in this room is lying.</h1>
               <p class="intro-lede">Pass the phone. Keep the secret. Find the spies.</p>
+              <div class="intro-actions">
+                <a class="button button-primary" href="#setup-view">Set up the room</a>
+                <button class="button button-ghost" type="button" data-open-how-to-play>How to play</button>
+              </div>
+            </div>
+            <div class="intro-mark" aria-hidden="true">
+              <span class="intro-mark-frame">
+                <img class="intro-mark-image" src="assets/app-icon-512.png" alt="">
+              </span>
+              <span class="intro-mark-tag">Case file · open</span>
             </div>
           </section>
 
@@ -81,7 +104,7 @@
             <button id="retry-button" class="button button-secondary" type="button">Retry</button>
           </section>
 
-          <section id="setup-view" class="phase-view action-card" data-phase="setup" aria-labelledby="setup-title">
+          <section id="setup-view" class="phase-view action-card setup-board" data-phase="setup" aria-labelledby="setup-title">
             <div class="phase-heading">
               <p class="section-kicker">01 / Get ready</p>
               <h2 id="setup-title">Who’s in the room?</h2>
@@ -89,7 +112,7 @@
             </div>
 
             <form id="player-form" class="setup-form" novalidate>
-              <fieldset class="roster-fieldset">
+              <fieldset class="roster-fieldset setup-panel">
                 <legend class="field-legend">
                   <span>Player names</span>
                   <span id="player-count" class="field-count">0 / 12</span>
@@ -102,13 +125,15 @@
                 </div>
                 <p id="player-help" class="field-help">Press enter or Add after each name. No duplicates.</p>
 
+                <div class="seat-strip" id="seat-strip" aria-hidden="true"></div>
+
                 <ul id="player-chips" class="player-chips" aria-label="Players"></ul>
 
                 <p id="player-empty-state" class="field-message" role="status">Add 4 names to start.</p>
                 <p id="player-error" class="field-message field-message-error" role="alert" hidden></p>
               </fieldset>
 
-              <fieldset class="setup-fieldset">
+              <fieldset class="setup-fieldset setup-panel">
                 <legend class="field-legend">Round length</legend>
                 <div class="segmented" role="radiogroup" aria-label="Round length in minutes">
                   <label class="segment" for="timer-180">
@@ -141,7 +166,7 @@
                 </div>
               </fieldset>
 
-              <fieldset class="secret-source-fieldset">
+              <fieldset class="secret-source-fieldset setup-panel">
                 <legend class="field-legend">Pick the secret</legend>
                 <p id="secret-source-help" class="field-help">Use a built-in location, or bring your own secret.</p>
                 <div class="secret-mode-options" role="radiogroup" aria-describedby="secret-source-help">
@@ -189,7 +214,7 @@
             </div>
           </section>
 
-          <section id="reveal-view" class="phase-view action-card" data-phase="reveal" aria-labelledby="reveal-title" hidden>
+          <section id="reveal-view" class="phase-view action-card reveal-stage" data-phase="reveal" aria-labelledby="reveal-title" hidden>
             <div class="handoff">
               <p class="section-kicker" id="reveal-progress">Card 1 of 5</p>
               <ol id="reveal-steps" class="reveal-steps" aria-label="Card handoff steps">
@@ -200,12 +225,15 @@
               <p id="reveal-instruction">Only the named player should look at this card.</p>
             </div>
 
+            <div class="reveal-seat" id="reveal-seat"></div>
+
             <div id="reveal-card" class="secret-card">
               <div class="secret-card-inner">
                 <div class="secret-card-front" aria-hidden="true">
                   <img class="phase-art reveal-front-art" src="assets/pass-phone.png" alt="" aria-hidden="true">
                   <p class="secret-label">Private card</p>
                   <p class="secret-hint">Reveal only when the named player is ready.</p>
+                  <span class="secret-seal" aria-hidden="true">Sealed</span>
                 </div>
                 <div id="reveal-card-face" class="secret-card-face">
                   <img id="reveal-art" class="phase-art reveal-art" src="assets/pass-phone.png" alt="" aria-hidden="true">
@@ -228,7 +256,7 @@
             </div>
           </section>
 
-          <section id="round-view" class="phase-view action-card" data-phase="round" aria-labelledby="round-title" hidden>
+          <section id="round-view" class="phase-view action-card round-stage" data-phase="round" aria-labelledby="round-title" hidden>
             <div class="phase-heading">
               <p class="section-kicker">03 / Ask around</p>
               <h2 id="round-title">Ask your questions</h2>
@@ -252,15 +280,9 @@
                   <span class="twist-tag">Chaos rule</span>
                   <span id="twist-text"></span>
                 </p>
+                <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
               </div>
             </div>
-
-            <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
-
-            <details id="location-board" class="question-protocol location-board" hidden>
-              <summary>Possible locations</summary>
-              <ul id="location-board-list" class="location-board-grid" aria-label="Possible locations"></ul>
-            </details>
 
             <div class="question-card">
               <div class="question-card-head">
@@ -269,6 +291,11 @@
               </div>
               <p id="question-prompt" class="question-prompt">What is the first thing you notice when you walk in?</p>
             </div>
+
+            <details id="location-board" class="question-protocol location-board" hidden>
+              <summary>Possible locations</summary>
+              <ul id="location-board-list" class="location-board-grid" aria-label="Possible locations"></ul>
+            </details>
 
             <details class="question-protocol">
               <summary>House rules</summary>
@@ -603,8 +630,8 @@
     <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=17"></script>
-    <script src="game.js?v=17"></script>
+    <script src="game-view.js?v=18"></script>
+    <script src="game.js?v=18"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

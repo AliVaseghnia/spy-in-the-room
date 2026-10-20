@@ -105,18 +105,19 @@ test('custom-secret mode and pass-the-phone visuals have explicit browser contra
   assert.match(css, /data-role=["']agent["']/);
 });
 
-test('home masthead stays copy-first without decorative artwork', () => {
+test('home masthead stays copy-first with a single brand mark', () => {
   const html = readProjectFile('index.html');
   const css = readProjectFile('styles.css');
 
   assert.match(html, /<div class=["']intro-copy-block["']>[\s\S]*<h1[^>]*id=["']page-title["']/);
+  assert.match(html, /class=["']intro-mark["']/);
   assert.doesNotMatch(html, /class=["']intro-support-row["']/);
-  assert.doesNotMatch(html, /class=["']intro-art["']/);
   assert.doesNotMatch(html, /class=["']dossier["']/);
+  // Gameplay instructions stay in the how-to-play dialog, not on the masthead.
+  assert.doesNotMatch(html, /class=["']intro-steps["']/);
   assert.match(html, /<section id=["']resume-view["'][\s\S]*<section id=["']connection-error["']/);
   assert.doesNotMatch(css, /\.intro-support-row\b/);
-  assert.doesNotMatch(css, /\.intro-art\b/);
-  assert.match(css, /\.intro\s*\{[\s\S]*margin-bottom:\s*1rem;/);
+  assert.match(css, /\.intro-mark\b/);
 });
 
 test('home screen keeps gameplay instructions behind the how-to-play dialog', () => {

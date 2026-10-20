@@ -53,6 +53,16 @@
     return button;
   }
 
+  function renderSeatStrip(ctx, count) {
+    var strip = ctx.refs.seatStrip;
+    if (!strip) return;
+
+    clearList(strip);
+    for (var index = 0; index < ctx.maxPlayers; index += 1) {
+      strip.appendChild(createElement(ctx, 'span', index < count ? 'seat-pip is-filled' : 'seat-pip'));
+    }
+  }
+
   function renderSetup(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
@@ -61,18 +71,38 @@
     clearList(refs.playerChips);
     roster.forEach(function (name, index) {
       var item = createElement(ctx, 'li', 'player-chip');
+      var seat = createElement(ctx, 'span', 'player-chip-seat', ('0' + (index + 1)).slice(-2));
       var removeButton = createElement(ctx, 'button', 'player-chip-remove', '×');
 
       removeButton.type = 'button';
       removeButton.setAttribute('data-remove-player', String(index));
       removeButton.setAttribute('aria-label', 'Remove ' + name);
+      item.appendChild(seat);
       item.appendChild(createAvatar(ctx, index));
       item.appendChild(createElement(ctx, 'span', 'player-chip-name', name));
       item.appendChild(removeButton);
       refs.playerChips.appendChild(item);
     });
 
+    renderSeatStrip(ctx, roster.length);
+
     ctx.updateSetupControls();
+  }
+
+  function renderRevealSeat(ctx, players, player, revealIndex) {
+    var seat = ctx.refs.revealSeat;
+    if (!seat) return;
+
+    clearList(seat);
+    if (!player) return;
+
+    var seatIndex = players.findIndex(function (candidate) {
+      return candidate.id === player.id;
+    });
+    if (seatIndex < 0) seatIndex = revealIndex;
+
+    seat.appendChild(createAvatar(ctx, seatIndex));
+    seat.appendChild(createElement(ctx, 'span', 'reveal-seat-name', player.displayName));
   }
 
   function renderReveal(ctx) {
@@ -124,6 +154,8 @@
         else step.removeAttribute('aria-current');
       });
     }
+
+    renderRevealSeat(ctx, players, player, revealIndex);
 
     refs.revealCard.removeAttribute('data-revealed');
     if (isCardVisible) refs.revealCard.setAttribute('data-revealed', 'true');
