@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=20">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -263,6 +263,8 @@
               <p>Bluff carefully. The secret stays hidden until the vote.</p>
             </div>
 
+            <ul class="round-roster" id="round-roster" aria-label="Players in this round"></ul>
+
             <div class="round-top">
               <div class="timer-ring" id="timer-ring" role="timer" aria-label="Time left">
                 <svg class="timer-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
@@ -283,6 +285,8 @@
                 <p id="round-location-hint" class="rule-strip">Everyone else knows the location. The spy doesn’t.</p>
               </div>
             </div>
+
+            <p id="round-timeup" class="timeup-call" role="status" hidden>Time’s up. The room votes now.</p>
 
             <div class="question-card">
               <div class="question-card-head">
@@ -351,6 +355,7 @@
               <label class="sr-only" for="guess-search-input">Search locations</label>
               <input id="guess-search-input" type="search" autocomplete="off" placeholder="Search locations" aria-describedby="guess-search-help">
               <p id="guess-search-help" class="field-help">Search available locations to narrow the list.</p>
+              <div id="guess-filters" class="guess-filters" role="group" aria-label="Filter locations by category"></div>
             </div>
 
             <ul id="guess-list" class="choice-list guess-grid" aria-label="Pick the secret">
@@ -367,6 +372,10 @@
           </section>
 
           <section id="result-view" class="phase-view action-card" data-phase="result" aria-labelledby="result-title" hidden>
+            <div class="result-celebration" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+
             <div id="result-stamp" class="result-stamp" aria-hidden="true">
               <span id="result-stamp-label">Room wins</span>
             </div>
@@ -376,6 +385,8 @@
               <h2 id="result-title">The room wins</h2>
               <p id="result-copy">You found the spy before the clock ran out.</p>
             </div>
+
+            <p id="result-recap" class="result-recap"></p>
 
             <dl class="result-details">
               <div>
@@ -417,11 +428,13 @@
               </div>
             </section>
 
-            <div class="button-row">
-              <button id="replay-button" class="button button-primary" type="button">Next round</button>
-              <button id="share-result-button" class="button button-secondary" type="button">Share result</button>
-              <button id="new-game-button" class="button button-secondary" type="button">New game</button>
-              <button id="delete-game-button" class="button button-danger" type="button">Delete game</button>
+            <div class="result-actions">
+              <button id="replay-button" class="button button-primary button-wide" type="button">Next round</button>
+              <div class="result-actions-row">
+                <button id="share-result-button" class="button button-secondary" type="button">Share result</button>
+                <button id="new-game-button" class="button button-secondary" type="button">New game</button>
+              </div>
+              <button id="delete-game-button" class="button button-ghost button-small result-delete" type="button">Delete game</button>
             </div>
 
             <section id="replay-secret-panel" class="inline-panel replay-secret-panel" aria-labelledby="replay-secret-title" hidden>
@@ -630,8 +643,8 @@
     <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=19"></script>
-    <script src="game.js?v=19"></script>
+    <script src="game-view.js?v=20"></script>
+    <script src="game.js?v=20"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

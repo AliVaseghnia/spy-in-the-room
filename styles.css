@@ -767,6 +767,20 @@ fieldset {
   content: '';
 }
 
+/* A quick brass sweep whenever a new phase arrives. */
+.action-card::after {
+  position: absolute;
+  top: 0;
+  left: 15%;
+  width: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brass-bright), transparent);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  animation: card-sweep 900ms var(--ease-out) both;
+}
+
 .phase-view {
   animation: phase-enter 280ms var(--ease-out) both;
 }
@@ -1702,6 +1716,37 @@ fieldset {
 
 /* ---------- 9. Round ---------- */
 
+/* Who is in the room, visible while the round runs. */
+.round-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.875rem;
+  padding: 0.625rem 0.875rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.24);
+  list-style: none;
+}
+
+.round-roster-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.round-roster-item .avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.8rem;
+}
+
+.round-roster-name {
+  color: var(--text-soft);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .round-top {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -1794,6 +1839,29 @@ fieldset {
 
 .timer-ring[data-urgency="urgent"] .timer-value {
   color: var(--red);
+}
+
+/* The clock ran out: the room has to vote. */
+.timeup-call {
+  padding: 0.75rem 0.875rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 122, 92, 0.45);
+  border-radius: var(--r-sm);
+  background: rgba(255, 122, 92, 0.1);
+  color: #ffb59f;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.button[data-urgent="true"] {
+  border-color: var(--red);
+  background: linear-gradient(180deg, #ff9a80, var(--red));
+  color: #2a0d05;
+  box-shadow: 0 0.75rem 1.75rem -0.75rem rgba(255, 122, 92, 0.7);
 }
 
 .twist-strip {
@@ -2063,6 +2131,40 @@ fieldset {
   margin: 0.5rem 0 0;
 }
 
+.guess-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.625rem;
+}
+
+.guess-filter {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.6875rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition:
+    border-color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out);
+}
+
+.guess-filter:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.guess-filter.is-active {
+  border-color: var(--brass);
+  background: rgba(233, 181, 99, 0.14);
+  color: var(--brass-bright);
+}
+
 .guess-grid {
   max-height: min(48vh, 22rem);
   overflow-y: auto;
@@ -2092,6 +2194,90 @@ fieldset {
 }
 
 /* ---------- 12. Result ---------- */
+
+/* The round as a story, not a table of facts. */
+.result-recap {
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+  border-left: 2px solid var(--brass);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: rgba(233, 181, 99, 0.07);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
+/* A room win gets a small brass celebration. */
+.result-celebration {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.result-celebration span {
+  --spark-delay: 0ms;
+  position: absolute;
+  top: 30%;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  background: var(--brass-bright);
+  opacity: 0;
+  box-shadow: 0 0 0.5rem rgba(255, 210, 138, 0.8);
+}
+
+.result-view[data-outcome="room"] .result-celebration span {
+  animation: spark-rise 1500ms var(--ease-out) var(--spark-delay) both;
+}
+
+.result-celebration span:nth-child(1) {
+  left: 9%;
+  --spark-delay: 60ms;
+}
+
+.result-celebration span:nth-child(2) {
+  left: 15%;
+  --spark-delay: 180ms;
+}
+
+.result-celebration span:nth-child(3) {
+  left: 21%;
+  --spark-delay: 20ms;
+}
+
+.result-celebration span:nth-child(4) {
+  left: 26%;
+  --spark-delay: 320ms;
+}
+
+.result-celebration span:nth-child(5) {
+  left: 31%;
+  --spark-delay: 240ms;
+}
+
+.result-celebration span:nth-child(6) {
+  left: 12%;
+  --spark-delay: 420ms;
+}
+
+.result-actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.result-actions-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.result-delete {
+  justify-self: center;
+  color: var(--muted-dim);
+}
 
 .result-stamp {
   display: inline-block;
@@ -2715,6 +2901,38 @@ fieldset {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes card-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(280%);
+  }
+}
+
+@keyframes spark-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.4);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-5.5rem) scale(1);
   }
 }
 

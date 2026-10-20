@@ -93,6 +93,7 @@
     question: null,
     twist: '',
     guessFilter: '',
+    guessCategory: '',
     shareStatus: '',
     wakeLock: null,
     soundEnabled: true,
@@ -176,6 +177,8 @@
       timerRing: getElement('timer-ring'),
       timerRingProgress: getElement('timer-ring-progress'),
       roundIntel: getElement('round-intel'),
+      roundRoster: getElement('round-roster'),
+      roundTimeup: getElement('round-timeup'),
       twistStrip: getElement('twist-strip'),
       twistText: getElement('twist-text'),
       questionPrompt: getElement('question-prompt'),
@@ -201,6 +204,7 @@
       guessList: getElement('guess-list'),
       guessSearchField: getElement('guess-search-field'),
       guessSearchInput: getElement('guess-search-input'),
+      guessFilters: getElement('guess-filters'),
       guessCustomForm: getElement('guess-custom-form'),
       guessInput: getElement('guess-input'),
       guessInputError: getElement('guess-input-error'),
@@ -213,6 +217,7 @@
       hapticsToggle: getElement('haptics-toggle'),
       resultView: getElement('result-view'),
       resultStamp: getElement('result-stamp'),
+      resultRecap: getElement('result-recap'),
       resultStampLabel: getElement('result-stamp-label'),
       resultTitle: getElement('result-title'),
       resultCopy: getElement('result-copy'),
@@ -782,6 +787,11 @@
       if (urgency) refs.timerRing.setAttribute('data-urgency', urgency);
       else refs.timerRing.removeAttribute('data-urgency');
     }
+    if (refs.roundTimeup) refs.roundTimeup.hidden = secondsRemaining > 0;
+    if (refs.endRoundButton) {
+      if (secondsRemaining <= 0) refs.endRoundButton.setAttribute('data-urgent', 'true');
+      else refs.endRoundButton.removeAttribute('data-urgent');
+    }
   }
 
   function isFocusedDisplay() {
@@ -843,8 +853,15 @@
         ? 'Ten seconds left.'
         : 'One minute left.';
     }
+    if (secondsRemaining === 0 && state.lastTimerCue !== 0) {
+      state.lastTimerCue = 0;
+      emitCue('warning', [40, 40, 40]);
+      if (refs.announcement) refs.announcement.textContent = 'Time’s up. The room votes now.';
+    }
     if (secondsRemaining <= 0 && isFocusedDisplay()) {
-      refreshAuthoritativeState('Checking the latest round state.');
+      refreshAuthoritativeState(state.lastTimerCue === 0
+        ? 'Time’s up. The room votes now.'
+        : 'Checking the latest round state.');
     }
   }
 
@@ -1228,6 +1245,7 @@
         ? logic.twistForRound(snapshot.gameId, snapshot.roundNumber)
         : '';
       state.guessFilter = '';
+      state.guessCategory = '';
     }
     if (snapshot.phase !== 'accuse') state.pendingAccusationPlayerId = null;
     if (snapshot.phase !== 'spy-guess') state.pendingGuessLocation = null;
@@ -1910,6 +1928,16 @@
     render();
   }
 
+  function handleGuessCategory(event) {
+    var chip = event.target.closest ? event.target.closest('[data-guess-category]') : null;
+    if (!chip) return;
+    state.guessCategory = chip.getAttribute('data-guess-category') || '';
+    setAnnouncement(state.guessCategory
+      ? 'Showing ' + state.guessCategory + ' locations.'
+      : 'Showing every location on the board.');
+    render();
+  }
+
   function handleSpiceChange() {
     state.prefs.spice = Boolean(refs.spiceToggle && refs.spiceToggle.checked);
     if (prefs && typeof prefs.saveFlags === 'function') prefs.saveFlags({ spice: state.prefs.spice });
@@ -1926,10 +1954,11 @@
     var spyNames = spies.map(function (spy) {
       return spy && spy.displayName ? spy.displayName : String(spy);
     }).join(' and ');
+    var recap = typeof view.describeOutcome === 'function' ? view.describeOutcome(outcome) : '';
     var text = 'Spy in the Room · Round ' + (snapshot ? snapshot.roundNumber : 1) + ': '
       + (outcome.winner === 'spies' ? 'the spies win' : 'the room wins')
-      + '. ' + (spies.length > 1 ? 'Spies: ' : 'Spy: ') + spyNames
-      + '. Secret: ' + (outcome.location || 'unknown') + '.';
+      + '. ' + (recap || ((spies.length > 1 ? 'Spies: ' : 'Spy: ') + spyNames
+        + '. Secret: ' + (outcome.location || 'unknown') + '.'));
     var navigatorRef = root && root.navigator;
 
     function copied() {
@@ -2210,6 +2239,7 @@
     refs.drawQuestionButton.addEventListener('click', handleDrawQuestion);
     refs.shareResultButton.addEventListener('click', handleShareResult);
     refs.guessSearchInput.addEventListener('input', handleGuessFilter);
+    if (refs.guessFilters) refs.guessFilters.addEventListener('click', handleGuessCategory);
     refs.endRoundButton.addEventListener('click', openEndRoundDialog);
     refs.confirmEndRoundButton.addEventListener('click', confirmEndRound);
     refs.cancelEndRoundButton.addEventListener('click', cancelEndRound);

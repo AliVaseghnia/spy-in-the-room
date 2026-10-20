@@ -252,6 +252,19 @@
       : 'Hide the card to start the round.';
   }
 
+  function renderRoundRoster(ctx, players) {
+    var roster = ctx.refs.roundRoster;
+    if (!roster) return;
+
+    clearList(roster);
+    players.forEach(function (player, index) {
+      var item = createElement(ctx, 'li', 'round-roster-item');
+      item.appendChild(createAvatar(ctx, index));
+      item.appendChild(createElement(ctx, 'span', 'round-roster-name', player.displayName));
+      roster.appendChild(item);
+    });
+  }
+
   function renderRound(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
@@ -293,6 +306,8 @@
       refs.roundIntel.textContent = (spyCount === 1 ? '1 spy' : spyCount + ' spies')
         + ' among ' + players.length + ' · Round ' + (snapshot.roundNumber || 1) + ' of ' + (snapshot.roundsTotal || 5);
     }
+
+    renderRoundRoster(ctx, players);
 
     if (refs.twistStrip && refs.twistText) {
       var twist = state.twist || '';
@@ -337,6 +352,45 @@
     }
   }
 
+  function placeName(place) {
+    if (typeof place === 'string') return place;
+    return place && place.name ? place.name : '';
+  }
+
+  function categoryFor(ctx, name) {
+    var deck = ctx.logic.LOCATION_DECK || [];
+    for (var index = 0; index < deck.length; index += 1) {
+      if (deck[index] && deck[index].name === name) return deck[index].category || '';
+    }
+    return '';
+  }
+
+  function renderGuessFilters(ctx, locations, selected) {
+    var filters = ctx.refs.guessFilters;
+    if (!filters) return;
+
+    clearList(filters);
+    var categories = [];
+    locations.forEach(function (place) {
+      var category = categoryFor(ctx, placeName(place));
+      if (category && categories.indexOf(category) === -1) categories.push(category);
+    });
+    if (categories.length < 2) return;
+    categories.sort();
+
+    var options = [{ label: 'All', value: '' }].concat(categories.map(function (category) {
+      return { label: category, value: category };
+    }));
+
+    options.forEach(function (option) {
+      var chip = createElement(ctx, 'button', 'guess-filter' + (option.value === selected ? ' is-active' : ''), option.label);
+      chip.type = 'button';
+      chip.setAttribute('data-guess-category', option.value);
+      chip.setAttribute('aria-pressed', String(option.value === selected));
+      filters.appendChild(chip);
+    });
+  }
+
   function renderGuess(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
@@ -344,13 +398,17 @@
     var player = snapshot.guessingPlayer;
     var customMode = snapshot.secretMode === 'custom';
     var filter = String(state.guessFilter || '').trim().toLowerCase();
+    var category = state.guessCategory || '';
     var deck = ctx.logic.LOCATION_DECK || [];
     var locations = Array.isArray(snapshot.locationBoard)
       ? snapshot.locationBoard
       : customMode ? [] : deck;
     var matches = locations.filter(function (place) {
-      var name = typeof place === 'string' ? place : place && place.name;
-      return name && (!filter || name.toLowerCase().indexOf(filter) !== -1);
+      var name = placeName(place);
+      if (!name) return false;
+      if (filter && name.toLowerCase().indexOf(filter) === -1) return false;
+      if (category && categoryFor(ctx, name) !== category) return false;
+      return true;
     });
 
     refs.guessTurnLabel.textContent = player
@@ -361,13 +419,14 @@
     refs.guessCustomForm.hidden = !customMode;
 
     if (!customMode) {
+      renderGuessFilters(ctx, locations, category);
       clearList(refs.guessList);
       if (matches.length === 0) {
         var empty = createElement(ctx, 'li', 'choice-empty', 'No location matches “' + state.guessFilter + '”. Try another word.');
         refs.guessList.appendChild(empty);
       }
       matches.forEach(function (place) {
-        var name = typeof place === 'string' ? place : place.name;
+        var name = placeName(place);
         var item = createElement(ctx, 'li');
         var button = createElement(ctx, 'button', 'choice-button', name);
         button.type = 'button';
@@ -422,6 +481,62 @@
     });
   }
 
+  function listNames(entries) {
+    return entries.map(function (entry) {
+      return entry && entry.displayName ? entry.displayName : String(entry);
+    });
+  }
+
+  function roleOf(outcome, name) {
+    var roles = Array.isArray(outcome.playerRoles) ? outcome.playerRoles : [];
+    for (var index = 0; index < roles.length; index += 1) {
+      var entry = roles[index];
+      if (!entry || !entry.player) continue;
+      if (entry.player.displayName !== name) continue;
+      return entry.role || '';
+    }
+    return '';
+  }
+
+  // The round as a story: who the room called, and whether the spy slipped away.
+  function describeOutcome(outcome) {
+    var spies = listNames(Array.isArray(outcome.spyPlayers) ? outcome.spyPlayers : []);
+    var spyTeam = spies.length > 1 ? spies.join(' and ') : (spies[0] || 'The spy');
+    var location = outcome.location || 'the secret';
+    var accused = outcome.accusedPlayer && outcome.accusedPlayer.displayName
+      ? outcome.accusedPlayer.displayName
+      : '';
+    var guesses = Array.isArray(outcome.guesses) ? outcome.guesses : [];
+    var guess = outcome.guess || '';
+    if (!guess && guesses.length > 0 && guesses[0] && guesses[0].location) {
+      guess = guesses[0].location;
+    }
+
+    if (outcome.reason === 'wrong-accusation') {
+      var role = accused ? roleOf(outcome, accused) : '';
+      return 'The room called in ' + (accused || 'the wrong player') + '. '
+        + (role ? accused + ' was ' + role + '. ' : (accused ? accused + ' was innocent. ' : ''))
+        + spyTeam + ' never got caught.';
+    }
+
+    if (outcome.reason === 'correct-guess') {
+      var namer = '';
+      guesses.forEach(function (entry) {
+        if (!entry || !entry.correct) return;
+        if (!namer && entry.player && entry.player.displayName) namer = entry.player.displayName;
+      });
+      return (namer || spyTeam) + ' named it: ' + location + '. '
+        + (spies.length > 1 ? 'The spies got away with it.' : 'The spy got away with it.');
+    }
+
+    if (guess) {
+      return (spies.length > 1 ? 'The spies guessed ' : spyTeam + ' guessed ')
+        + guess + ', but the secret was ' + location + '.';
+    }
+
+    return 'The room found ' + spyTeam + ' before the secret could slip away.';
+  }
+
   function renderResult(ctx) {
     var state = ctx.state;
     var refs = ctx.refs;
@@ -452,6 +567,11 @@
     }
 
     if (refs.resultStamp) refs.resultStamp.setAttribute('data-outcome', winner === 'spies' ? 'spies' : 'room');
+    if (refs.resultView) refs.resultView.setAttribute('data-outcome', winner === 'spies' ? 'spies' : 'room');
+    if (refs.resultRecap) {
+      refs.resultRecap.textContent = describeOutcome(outcome);
+      refs.resultRecap.hidden = !outcome || !outcome.reason;
+    }
     if (refs.resultStampLabel) refs.resultStampLabel.textContent = winner === 'spies' ? 'Spies win' : 'Room wins';
     if (refs.resultSecretLabel) refs.resultSecretLabel.textContent = customMode ? 'Secret' : 'Location';
     refs.resultLocation.textContent = outcome.location || 'Unknown';
@@ -637,6 +757,7 @@
   }
 
   return {
+    describeOutcome: describeOutcome,
     renderSetup: renderSetup,
     renderReveal: renderReveal,
     renderRound: renderRound,

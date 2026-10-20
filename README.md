@@ -47,6 +47,12 @@ built to feel like a game you reach for again:
 - **A result worth watching.** A stamp hits, the location, spy team, and
   player roles are revealed; points animate onto a leaderboard, and the whole
   result can be shared to the group chat.
+- **A result worth retelling.** The round ends with a sentence, not a table —
+  *"The room called in Ana. Ana was the one who measured twice. Dev never got
+  caught."* — and that same line is what gets shared to the group chat.
+- **A board the spy can think in.** The last shot can be narrowed by category
+  (food, travel, public places…) as well as by name, so the spy is reasoning
+  about places instead of scrolling a list of 24.
 - **It remembers your table.** Names, cue preferences, and chaos mode are
   stored on the device. Nothing about the game itself ever is.
 
@@ -76,7 +82,7 @@ built to feel like a game you reach for again:
 | Rounds | 3 / 5 / 8 minute timers, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
 | Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
-| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker |
+| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker, round recap, category filters on the last shot |
 | Platform | Installable PWA shell, offline reconnect fallback, mobile-first responsive layout |
 | Accessibility | Full keyboard flow, live-region announcements, focus management, `prefers-reduced-motion` support |
 | Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never the true location, spy flags, or roles |
