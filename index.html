@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=18">
+    <link rel="stylesheet" href="styles.css?v=19">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -123,34 +123,32 @@
                   <input id="player-name-input" type="text" autocomplete="off" maxlength="32" placeholder="Type a name" enterkeyhint="add" aria-describedby="player-help player-empty-state player-error">
                   <button id="add-player-button" class="button button-secondary" type="button" data-add-player>Add</button>
                 </div>
-                <p id="player-help" class="field-help">Press enter or Add after each name. No duplicates.</p>
-
-                <div class="seat-strip" id="seat-strip" aria-hidden="true"></div>
+                <p id="player-help" class="field-help">Press enter or Add after each name.</p>
 
                 <ul id="player-chips" class="player-chips" aria-label="Players"></ul>
 
-                <p id="player-empty-state" class="field-message" role="status">Add 4 names to start.</p>
                 <p id="player-error" class="field-message field-message-error" role="alert" hidden></p>
               </fieldset>
 
+              <div class="setup-options">
               <fieldset class="setup-fieldset setup-panel">
                 <legend class="field-legend">Round length</legend>
                 <div class="segmented" role="radiogroup" aria-label="Round length in minutes">
                   <label class="segment" for="timer-180">
                     <input id="timer-180" name="timerSeconds" type="radio" value="180">
-                    <span><strong>3</strong> min</span>
+                    <span><strong>3</strong><small>min</small></span>
                   </label>
                   <label class="segment" for="timer-300">
                     <input id="timer-300" name="timerSeconds" type="radio" value="300" checked>
-                    <span><strong>5</strong> min</span>
+                    <span><strong>5</strong><small>min</small></span>
                   </label>
                   <label class="segment" for="timer-480">
                     <input id="timer-480" name="timerSeconds" type="radio" value="480">
-                    <span><strong>8</strong> min</span>
+                    <span><strong>8</strong><small>min</small></span>
                   </label>
                   <label class="segment" for="timer-custom">
                     <input id="timer-custom" name="timerSeconds" type="radio" value="custom">
-                    <span><strong>Custom</strong></span>
+                    <span><strong>Custom</strong><small>1–60 min</small></span>
                   </label>
                 </div>
                 <div id="custom-timer-field" class="custom-timer-field" hidden>
@@ -207,10 +205,12 @@
                   </div>
                 </details>
               </div>
+              </div>
             </form>
 
             <div class="sticky-action">
               <button id="start-button" class="button button-primary button-wide" type="submit" form="player-form" disabled>Deal the cards</button>
+              <p id="player-empty-state" class="setup-hint" role="status">Add 4 names to start.</p>
             </div>
           </section>
 
@@ -630,8 +630,8 @@
     <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=18"></script>
-    <script src="game.js?v=18"></script>
+    <script src="game-view.js?v=19"></script>
+    <script src="game.js?v=19"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

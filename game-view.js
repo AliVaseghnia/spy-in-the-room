@@ -53,14 +53,8 @@
     return button;
   }
 
-  function renderSeatStrip(ctx, count) {
-    var strip = ctx.refs.seatStrip;
-    if (!strip) return;
-
-    clearList(strip);
-    for (var index = 0; index < ctx.maxPlayers; index += 1) {
-      strip.appendChild(createElement(ctx, 'span', index < count ? 'seat-pip is-filled' : 'seat-pip'));
-    }
+  function seatLabel(index) {
+    return ('0' + (index + 1)).slice(-2);
   }
 
   function renderSetup(ctx) {
@@ -69,22 +63,30 @@
     var roster = Array.isArray(state.roster) ? state.roster : [];
 
     clearList(refs.playerChips);
-    roster.forEach(function (name, index) {
+    for (var seat = 0; seat < ctx.maxPlayers; seat += 1) {
+      var name = roster[seat];
+
+      if (name === undefined) {
+        var empty = createElement(ctx, 'li', 'player-seat');
+        empty.setAttribute('aria-hidden', 'true');
+        empty.appendChild(createElement(ctx, 'span', 'player-chip-seat', seatLabel(seat)));
+        empty.appendChild(createElement(ctx, 'span', 'player-seat-mark', '+'));
+        refs.playerChips.appendChild(empty);
+        continue;
+      }
+
       var item = createElement(ctx, 'li', 'player-chip');
-      var seat = createElement(ctx, 'span', 'player-chip-seat', ('0' + (index + 1)).slice(-2));
       var removeButton = createElement(ctx, 'button', 'player-chip-remove', '×');
 
       removeButton.type = 'button';
-      removeButton.setAttribute('data-remove-player', String(index));
+      removeButton.setAttribute('data-remove-player', String(seat));
       removeButton.setAttribute('aria-label', 'Remove ' + name);
-      item.appendChild(seat);
-      item.appendChild(createAvatar(ctx, index));
+      item.appendChild(createElement(ctx, 'span', 'player-chip-seat', seatLabel(seat)));
+      item.appendChild(createAvatar(ctx, seat));
       item.appendChild(createElement(ctx, 'span', 'player-chip-name', name));
       item.appendChild(removeButton);
       refs.playerChips.appendChild(item);
-    });
-
-    renderSeatStrip(ctx, roster.length);
+    }
 
     ctx.updateSetupControls();
   }

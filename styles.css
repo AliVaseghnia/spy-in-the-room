@@ -845,7 +845,7 @@ fieldset {
   gap: clamp(1.25rem, 4vw, 2.5rem);
   align-items: center;
   max-width: 42rem;
-  margin-bottom: 1.75rem;
+  margin: 0 auto 1.75rem;
 }
 
 .intro-copy-block {
@@ -902,8 +902,21 @@ fieldset {
 
 /* ---------- 7. Setup ---------- */
 
+/* The home board is wider than the in-game column: the table of seats and
+   the game settings each need a column of their own. */
+.app-shell[data-phase="setup"] .game-layout,
+.app-shell[data-phase="resume"] .game-layout {
+  grid-template-columns: minmax(0, 56rem);
+}
+
 .setup-form {
   display: grid;
+  gap: 1rem;
+}
+
+.setup-options {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
@@ -912,6 +925,13 @@ fieldset {
   border: 1px solid var(--line-soft);
   border-radius: var(--r-md);
   background: rgba(0, 0, 0, 0.22);
+}
+
+.roster-fieldset {
+  display: flex;
+  flex-direction: column;
+  border-color: var(--line);
+  background: rgba(0, 0, 0, 0.32);
 }
 
 .roster-entry {
@@ -927,58 +947,65 @@ fieldset {
   flex: 0 0 auto;
 }
 
-/* Twelve seats, filled as players are added. */
-.seat-strip {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0.25rem;
-  margin: 0 0 0.875rem;
+.roster-fieldset .field-help {
+  margin-top: 0.5rem;
+  margin-bottom: 0.875rem;
 }
 
-.seat-pip {
-  height: 0.25rem;
-  border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.seat-pip.is-filled {
-  background: linear-gradient(90deg, var(--brass-dim), var(--brass-bright));
-  box-shadow: 0 0 0.5rem rgba(233, 181, 99, 0.45);
-}
-
-/* The roster reads as a table of suspects, not a row of pills. */
+/* The table: twelve seats, filled as players are added. */
 .player-chips {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(8.25rem, 1fr));
-  gap: 0.625rem;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(6rem, 1fr);
+  gap: 0.5rem;
+  align-content: stretch;
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.player-chip {
+.player-chip,
+.player-seat {
   position: relative;
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: 0.375rem;
-  padding: 0.875rem 0.5rem 0.75rem;
-  border: 1px solid var(--line-soft);
+  padding: 1.75rem 0.375rem 0.5rem;
   border-radius: var(--r-md);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)), var(--ink-800);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.player-chip {
+  border: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)), var(--ink-800);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   animation: seat-in 260ms var(--ease-spring) both;
 }
 
+/* An empty chair at the table. */
+.player-seat {
+  border: 1px dashed var(--line);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.player-seat-mark {
+  color: var(--muted-dim);
+  font-size: 1.375rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
 .player-chip .avatar {
-  width: 2.75rem;
-  height: 2.75rem;
-  font-size: 1.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.375rem;
 }
 
 .player-chip-seat {
   position: absolute;
-  top: 0.5rem;
-  left: 0.625rem;
+  top: 0.4375rem;
+  left: 0.5rem;
   color: var(--muted-dim);
   font-family: var(--font-mono);
   font-size: 0.5625rem;
@@ -987,37 +1014,67 @@ fieldset {
 }
 
 .player-chip-name {
+  display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
   color: var(--text);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 650;
+  line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .player-chip-remove {
   position: absolute;
-  top: 0.375rem;
-  right: 0.375rem;
+  top: 0.25rem;
+  right: 0.25rem;
   display: grid;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
   place-items: center;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
   color: var(--muted-dim);
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1;
   transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+/* A thumb-sized hit area without crowding the seat tile. */
+.player-chip-remove::before {
+  position: absolute;
+  inset: -0.5rem;
+  content: '';
 }
 
 .player-chip-remove:hover {
   background: rgba(255, 122, 92, 0.16);
   color: var(--red);
+}
+
+.setup-hint {
+  margin: 0.625rem 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.setup-board .button-primary {
+  min-height: 3.5rem;
+  font-size: 1.0625rem;
+}
+
+/* Locked until the table is full enough — an empty slot, not a dead slab. */
+.setup-board .button-primary:disabled {
+  border: 1px dashed var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
 }
 
 /* Round length: one brass slider behind four slots. */
@@ -1067,14 +1124,20 @@ fieldset {
 .segment {
   position: relative;
   display: grid;
-  min-height: 3.25rem;
+  min-height: 4rem;
   place-items: center;
   border-radius: calc(var(--r-md) - 3px);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.8125rem;
   transition: color 200ms var(--ease-out);
+}
+
+.segment span {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+  line-height: 1;
 }
 
 .segment input {
@@ -1087,12 +1150,24 @@ fieldset {
 
 .segment strong {
   color: var(--text-soft);
-  font-size: 1.125rem;
+  font-size: 1.375rem;
+  font-weight: 650;
+}
+
+.segment small {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* "Custom" is a word, not a number — it needs to sit smaller in its slot. */
 .segment:last-child strong {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+}
+
+.segment:last-child small {
+  font-size: 0.5625rem;
 }
 
 .segment:has(input:checked) {
@@ -2739,8 +2814,7 @@ fieldset {
   .button,
   .choice-button,
   input,
-  select,
-  .player-chip-remove {
+  select {
     min-height: 3rem;
   }
 
@@ -2748,12 +2822,6 @@ fieldset {
   .player-chips,
   .button-row {
     gap: 0.75rem;
-  }
-
-  .player-chip-remove {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: var(--r-sm);
   }
 }
 
@@ -2773,18 +2841,14 @@ fieldset {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  /* Roster on the left, the rest of the briefing on the right. */
+  /* The table on the left, the round settings on the right. */
   .setup-form {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    align-items: start;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
     gap: 1rem;
   }
 
-  .roster-fieldset {
-    grid-row: span 3;
-  }
-
-  /* The right column is too narrow for two radio cards side by side. */
+  /* Stacked choices fill the settings column beside the taller table. */
   .secret-mode-options {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2891,7 +2955,7 @@ fieldset {
   }
 
   .player-chips {
-    grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .secret-mode-options {

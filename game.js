@@ -133,7 +133,6 @@
       playerForm: getElement('player-form'),
       playerNameInput: getElement('player-name-input'),
       playerChips: getElement('player-chips'),
-      seatStrip: getElement('seat-strip'),
       revealSeat: getElement('reveal-seat'),
       phaseStepper: getElement('phase-stepper'),
       playerCount: getElement('player-count'),
