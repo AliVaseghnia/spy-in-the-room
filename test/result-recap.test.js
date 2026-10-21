@@ -75,6 +75,24 @@ test('the recap reports a missed guess against the real secret', () => {
   assert.equal(recap, 'Dev guessed Airport, but the secret was Ferry terminal.');
 });
 
+test('the recap lists every miss when both spies guess wrong', () => {
+  const recap = describeOutcome({
+    winner: 'group',
+    reason: 'wrong-guess',
+    location: 'Concert hall',
+    spyPlayers: [player('Ana'), player('Dev')],
+    guesses: [
+      { player: player('Ana'), location: 'Animal shelter', correct: false },
+      { player: player('Dev'), location: 'Arcade', correct: false }
+    ]
+  });
+
+  assert.equal(
+    recap,
+    'The spies guessed Animal shelter and Arcade, but the secret was Concert hall.'
+  );
+});
+
 test('the recap survives an outcome with nothing to report', () => {
   const recap = describeOutcome({});
 

@@ -516,10 +516,12 @@
       ? outcome.accusedPlayer.displayName
       : '';
     var guesses = Array.isArray(outcome.guesses) ? outcome.guesses : [];
-    var guess = outcome.guess || '';
-    if (!guess && guesses.length > 0 && guesses[0] && guesses[0].location) {
-      guess = guesses[0].location;
-    }
+    var missed = [];
+    guesses.forEach(function (entry) {
+      if (!entry || !entry.location) return;
+      if (missed.indexOf(entry.location) === -1) missed.push(entry.location);
+    });
+    var guess = outcome.guess || (missed.length > 0 ? missed[0] : '');
 
     if (outcome.reason === 'wrong-accusation') {
       var role = accused ? roleOf(outcome, accused) : '';
@@ -540,7 +542,8 @@
 
     if (guess) {
       return (spies.length > 1 ? 'The spies guessed ' : spyTeam + ' guessed ')
-        + guess + ', but the secret was ' + location + '.';
+        + (missed.length > 1 ? missed.join(' and ') : guess)
+        + ', but the secret was ' + location + '.';
     }
 
     return 'The room found ' + spyTeam + ' before the secret could slip away.';
