@@ -23,11 +23,11 @@
   --brass-dim: #a67c3c;
   --brass-ink: #1d1406;
 
-  /* Signals. */
+  /* Signals. Brass is the spy, teal is the room, red is the alarm. */
   --red: #ff7a5c;
   --red-deep: #c9482c;
-  --mint: #6fd3a3;
-  --mint-deep: #2f8a60;
+  --teal: #4fd1c8;
+  --teal-deep: #2a8f88;
 
   --text: #f6f1e7;
   --text-soft: #c5cedb;
@@ -339,7 +339,7 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  color: var(--mint);
+  color: var(--teal);
 }
 
 .status-connection .status-value::before {
@@ -505,7 +505,7 @@ h3 {
 }
 
 .app-shell[data-phase="result"] .action-card {
-  border-color: rgba(111, 211, 163, 0.4);
+  border-color: rgba(79, 209, 200, 0.4);
 }
 
 /* ---------- 4. Buttons, fields, chips ---------- */
@@ -970,13 +970,75 @@ fieldset {
   display: grid;
   grid-area: mark;
   justify-items: center;
+  justify-self: center;
   gap: 0.75rem;
   animation: rise-in 700ms var(--ease-out) 200ms both;
+}
+
+/* The cast: the game caught between the spy and the room. */
+.cast {
+  position: relative;
+  display: grid;
+  width: clamp(12.5rem, 32vw, 16.5rem);
+  height: clamp(12.5rem, 32vw, 16.5rem);
+  place-items: center;
+}
+
+.cast-plate {
+  --plate-x: 0%;
+  --plate-r: 0deg;
+  --art-x: 0%;
+  position: absolute;
+  z-index: 0;
+  display: grid;
+  width: 58%;
+  height: 58%;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(233, 181, 99, 0.18), rgba(233, 181, 99, 0.04));
+  box-shadow: 0 1.25rem 2.5rem -1.25rem rgba(0, 0, 0, 0.9);
+  transform: translateX(var(--plate-x)) rotate(var(--plate-r));
+  animation: plate-float 7.5s ease-in-out infinite;
+}
+
+.cast-plate img {
+  width: 68%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0.5rem 1rem rgba(0, 0, 0, 0.6));
+  transform: translateX(var(--art-x));
+}
+
+.cast-plate-spy {
+  --plate-x: -48%;
+  --plate-r: -10deg;
+  --art-x: -12%;
+}
+
+.cast-plate-agent {
+  --plate-x: 48%;
+  --plate-r: 10deg;
+  --art-x: 12%;
+  animation-direction: reverse;
+}
+
+@keyframes plate-float {
+  0%,
+  100% {
+    transform: translateX(var(--plate-x)) rotate(var(--plate-r)) translateY(0);
+  }
+
+  50% {
+    transform: translateX(var(--plate-x)) rotate(var(--plate-r)) translateY(-0.5rem);
+  }
 }
 
 /* The emblem: a brass-framed case plate with a light that keeps moving. */
 .intro-mark-frame {
   position: relative;
+  z-index: 1;
   display: grid;
   width: clamp(8.5rem, 24vw, 12.5rem);
   height: clamp(8.5rem, 24vw, 12.5rem);
@@ -1741,9 +1803,9 @@ fieldset {
 }
 
 .secret-card-face[data-role="agent"] {
-  border-color: rgba(111, 211, 163, 0.6);
+  border-color: rgba(79, 209, 200, 0.6);
   background:
-    linear-gradient(135deg, rgba(111, 211, 163, 0.16), transparent 55%),
+    linear-gradient(135deg, rgba(79, 209, 200, 0.16), transparent 55%),
     var(--ink-850);
 }
 
@@ -1764,7 +1826,7 @@ fieldset {
 }
 
 .secret-card-face[data-role="agent"] .phase-art {
-  filter: drop-shadow(0 0 1.5rem rgba(111, 211, 163, 0.28));
+  filter: drop-shadow(0 0 1.5rem rgba(79, 209, 200, 0.28));
 }
 
 .secret-label {
@@ -2184,6 +2246,22 @@ fieldset {
 
 /* ---------- 10. Accuse ---------- */
 
+/* One of these is hiding under that hat. */
+.accuse-stage {
+  overflow: hidden;
+}
+
+.accuse-backdrop {
+  position: absolute;
+  top: -2.5rem;
+  right: -3rem;
+  width: clamp(9rem, 40vw, 17rem);
+  height: auto;
+  opacity: 0.13;
+  filter: saturate(0.5);
+  pointer-events: none;
+}
+
 .suspect-grid {
   gap: 0.875rem;
 }
@@ -2419,8 +2497,8 @@ fieldset {
 }
 
 .result-stamp[data-outcome="room"] {
-  border-color: var(--mint);
-  color: var(--mint);
+  border-color: var(--teal);
+  color: var(--teal);
 }
 
 .result-details {
@@ -2592,8 +2670,8 @@ fieldset {
   margin: 0 0 1.25rem;
   border: 1px solid var(--line-soft);
   border-radius: var(--r-pill);
-  background: rgba(111, 211, 163, 0.08);
-  color: var(--mint);
+  background: rgba(79, 209, 200, 0.08);
+  color: var(--teal);
   font-size: 0.6875rem;
   font-weight: 700;
   text-align: center;
@@ -2838,24 +2916,45 @@ fieldset {
 
 .how-to-play-step {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
+  grid-template-columns: 2.75rem minmax(0, 1fr);
   gap: 0.875rem;
+  align-items: start;
   padding: 1rem 0;
   border-bottom: 1px solid var(--line-soft);
 }
 
-.how-to-play-number {
+.how-to-play-art {
+  position: relative;
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.how-to-play-art img {
+  width: 2.125rem;
+  height: 2.125rem;
+  object-fit: contain;
+}
+
+.how-to-play-number {
+  position: absolute;
+  right: -0.3125rem;
+  bottom: -0.3125rem;
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
   place-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-sm);
-  background: rgba(233, 181, 99, 0.08);
+  border-radius: 50%;
+  background: var(--ink-900);
   color: var(--brass);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   font-weight: 700;
+  letter-spacing: 0;
 }
 
 .how-to-play-step h3 {
@@ -2964,8 +3063,8 @@ fieldset {
 
 .replay-secret-panel {
   margin-top: 1.25rem;
-  border-color: rgba(111, 211, 163, 0.38);
-  background: rgba(111, 211, 163, 0.06);
+  border-color: rgba(79, 209, 200, 0.38);
+  background: rgba(79, 209, 200, 0.06);
 }
 
 .replay-secret-heading {

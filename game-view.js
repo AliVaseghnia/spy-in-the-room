@@ -325,9 +325,22 @@
     }
 
     if (refs.questionPrompt) {
-      refs.questionPrompt.textContent = question && question.text
+      var promptText = question && question.text
         ? question.text
         : 'Ask one question around the room.';
+      if (refs.questionPrompt.textContent !== promptText) {
+        refs.questionPrompt.textContent = promptText;
+        // A freshly drawn prompt arrives instead of just changing.
+        if (typeof refs.questionPrompt.animate === 'function') {
+          refs.questionPrompt.animate(
+            [
+              { opacity: 0, transform: 'translateY(0.625rem)' },
+              { opacity: 1, transform: 'none' }
+            ],
+            { duration: 340, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' }
+          );
+        }
+      }
     }
 
     ctx.renderTimer();

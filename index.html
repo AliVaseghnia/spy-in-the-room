@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=22">
+    <link rel="stylesheet" href="styles.css?v=23">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -75,10 +75,14 @@
               <p class="intro-proof">Five minutes a round · no sign-up · no install</p>
             </div>
             <div class="intro-mark" aria-hidden="true">
-              <span class="intro-mark-frame">
-                <span class="intro-mark-gleam"></span>
-                <img class="intro-mark-image" src="assets/app-icon-512.png" alt="">
-              </span>
+              <div class="cast">
+                <span class="cast-plate cast-plate-spy"><img src="assets/role-spy.png" alt=""></span>
+                <span class="cast-plate cast-plate-agent"><img src="assets/role-agent.png" alt=""></span>
+                <span class="intro-mark-frame">
+                  <span class="intro-mark-gleam"></span>
+                  <img class="intro-mark-image" src="assets/app-icon-512.png" alt="">
+                </span>
+              </div>
               <span class="intro-mark-tag">Case file · open</span>
             </div>
           </section>
@@ -325,7 +329,8 @@
             </div>
           </section>
 
-          <section id="accuse-view" class="phase-view action-card" data-phase="accuse" aria-labelledby="accuse-title" hidden>
+          <section id="accuse-view" class="phase-view action-card accuse-stage" data-phase="accuse" aria-labelledby="accuse-title" hidden>
+            <img class="accuse-backdrop" src="assets/role-spy.png" alt="" aria-hidden="true">
             <div class="phase-heading">
               <p class="section-kicker">04 / Call it</p>
               <h2 id="accuse-title">Who is the spy?</h2>
@@ -505,28 +510,40 @@
 
         <ol class="how-to-play-list">
           <li class="how-to-play-step">
-            <span class="how-to-play-number" aria-hidden="true">01</span>
+            <span class="how-to-play-art">
+              <img src="assets/app-icon-64.png" alt="" aria-hidden="true">
+              <span class="how-to-play-number" aria-hidden="true">01</span>
+            </span>
             <div>
               <h3>Get the room ready</h3>
               <p>Add 4–12 names. Pick a location, or bring your own secret.</p>
             </div>
           </li>
           <li class="how-to-play-step">
-            <span class="how-to-play-number" aria-hidden="true">02</span>
+            <span class="how-to-play-art">
+              <img src="assets/pass-phone.png" alt="" aria-hidden="true">
+              <span class="how-to-play-number" aria-hidden="true">02</span>
+            </span>
             <div>
               <h3>Reveal, hide &amp; pass</h3>
               <p>The named player reveals their card, then taps once to hide it and pass the phone to the next player. The final hide starts the round.</p>
             </div>
           </li>
           <li class="how-to-play-step">
-            <span class="how-to-play-number" aria-hidden="true">03</span>
+            <span class="how-to-play-art">
+              <img src="assets/role-agent.png" alt="" aria-hidden="true">
+              <span class="how-to-play-number" aria-hidden="true">03</span>
+            </span>
             <div>
               <h3>Ask, bluff, accuse</h3>
               <p>Talk around the location without giving it away. Answer in character if you like; don’t say your role outright. Watch who sounds lost.</p>
             </div>
           </li>
           <li class="how-to-play-step">
-            <span class="how-to-play-number" aria-hidden="true">04</span>
+            <span class="how-to-play-art">
+              <img src="assets/role-spy.png" alt="" aria-hidden="true">
+              <span class="how-to-play-number" aria-hidden="true">04</span>
+            </span>
             <div>
               <h3>Vote, then guess</h3>
               <p>Pick the spy. If you’re right, the spy gets one last shot at the secret.</p>
@@ -646,7 +663,7 @@
     <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=22"></script>
+    <script src="game-view.js?v=23"></script>
     <script src="game.js?v=23"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
