@@ -3012,6 +3012,11 @@ fieldset {
   color: var(--text-soft);
 }
 
+.how-to-play-note em {
+  color: var(--brass-bright);
+  font-style: normal;
+}
+
 .toggle-option {
   display: flex;
   align-items: center;
