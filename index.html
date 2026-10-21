@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=25">
+    <link rel="stylesheet" href="styles.css?v=26">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -115,6 +115,7 @@
               <p class="section-kicker">01 / Get ready</p>
               <h2 id="setup-title">Who’s in the room?</h2>
               <p>Add your players — 4 to 12. Give the phone a shake and we’ll deal the roles.</p>
+              <p class="setup-rules-link">First time? <button class="rules-link" type="button" data-open-how-to-play>How to play</button></p>
             </div>
 
             <form id="player-form" class="setup-form" novalidate>
@@ -508,68 +509,6 @@
 
         <p id="how-to-play-summary" class="how-to-play-summary">One phone. One secret. Spies hiding in plain sight.</p>
 
-        <ol class="how-to-play-list">
-          <li class="how-to-play-step">
-            <span class="how-to-play-art">
-              <img src="assets/app-icon-64.png" alt="" aria-hidden="true">
-              <span class="how-to-play-number" aria-hidden="true">01</span>
-            </span>
-            <div>
-              <h3>Get the room ready</h3>
-              <p>Add 4–12 names. Pick a location, or bring your own secret.</p>
-            </div>
-          </li>
-          <li class="how-to-play-step">
-            <span class="how-to-play-art">
-              <img src="assets/pass-phone-256.png" alt="" aria-hidden="true">
-              <span class="how-to-play-number" aria-hidden="true">02</span>
-            </span>
-            <div>
-              <h3>Reveal, hide &amp; pass</h3>
-              <p>The named player reveals their card, then taps once to hide it and pass the phone to the next player. The final hide starts the round.</p>
-            </div>
-          </li>
-          <li class="how-to-play-step">
-            <span class="how-to-play-art">
-              <img src="assets/role-agent-256.png" alt="" aria-hidden="true">
-              <span class="how-to-play-number" aria-hidden="true">03</span>
-            </span>
-            <div>
-              <h3>Ask, bluff, accuse</h3>
-              <p>Talk around the location without giving it away. Answer in character if you like; don’t say your role outright. Watch who sounds lost.</p>
-            </div>
-          </li>
-          <li class="how-to-play-step">
-            <span class="how-to-play-art">
-              <img src="assets/role-spy-256.png" alt="" aria-hidden="true">
-              <span class="how-to-play-number" aria-hidden="true">04</span>
-            </span>
-            <div>
-              <h3>Vote, then guess</h3>
-              <p>Pick the spy. If you’re right, the spy gets one last shot at the secret.</p>
-            </div>
-          </li>
-        </ol>
-
-        <div class="how-to-play-note">
-          <p class="section-kicker">Your role</p>
-          <p>Your card names the place and the character you are there —
-            <em>“Food court — you’re the pastry chef.”</em> That is your cue to talk
-            like someone who works there. The spy has neither a place nor a
-            character, so they have to invent both. With your own secret there
-            is no place and no role — only the secret itself.</p>
-        </div>
-
-        <div class="how-to-play-note">
-          <p class="section-kicker">Questions</p>
-          <p>The phone deals a prompt and anyone can draw another — <em>“What is
-            the loudest thing here?”</em> Everyone answers in character. The
-            prompts are the same for the spy, so they never give the place
-            away — but they are the hardest thing to fake. Chaos mode adds one
-            public rule for the round, like <em>answers must be exactly three
-            words</em>.</p>
-        </div>
-
         <dl class="how-to-play-facts">
           <div>
             <dt>Players</dt>
@@ -583,12 +522,146 @@
             <dt>Spies</dt>
             <dd>1 or 2</dd>
           </div>
+          <div>
+            <dt>Rounds</dt>
+            <dd>5</dd>
+          </div>
         </dl>
 
-        <div class="how-to-play-note">
-          <p class="section-kicker">Win condition</p>
-          <p>Find the spies before the clock runs out. Pick the wrong player and the spies take the round.</p>
-        </div>
+        <section class="rules-section">
+          <h3 class="rules-heading">What you are holding</h3>
+          <div class="rules-specimens">
+            <figure class="rules-specimen is-agent">
+              <div class="rules-specimen-card">
+                <p class="secret-label">Your assignment</p>
+                <p class="rules-specimen-secret">Food court</p>
+                <p class="rules-specimen-role">you’re the pastry chef</p>
+              </div>
+              <figcaption>The room knows the place. So do you. Keep the character to yourself.</figcaption>
+            </figure>
+            <figure class="rules-specimen is-spy">
+              <div class="rules-specimen-card">
+                <p class="secret-label">Your role</p>
+                <p class="rules-specimen-secret">You’re the spy.</p>
+                <p class="rules-specimen-role">no place. no character.</p>
+              </div>
+              <figcaption>The spy gets the board of places and nothing else.</figcaption>
+            </figure>
+          </div>
+          <p>Everyone’s card says where they are. The spy’s card doesn’t. The spy
+            is handed the board and has to invent a place, a character, and a
+            convincing story about both.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">Set up the room</h3>
+          <ol class="how-to-play-list">
+            <li class="how-to-play-step">
+              <span class="how-to-play-art">
+                <img src="assets/app-icon-64.png" alt="" aria-hidden="true">
+                <span class="how-to-play-number" aria-hidden="true">01</span>
+              </span>
+              <div>
+                <h4>Get the room ready</h4>
+                <p>Add 4–12 names. Pick a round length, and either let the game pick a location or bring your own secret. Then deal the cards.</p>
+              </div>
+            </li>
+            <li class="how-to-play-step">
+              <span class="how-to-play-art">
+                <img src="assets/pass-phone-256.png" alt="" aria-hidden="true">
+                <span class="how-to-play-number" aria-hidden="true">02</span>
+              </span>
+              <div>
+                <h4>Reveal, hide &amp; pass</h4>
+                <p>The named player reveals their card, then taps once to hide it and pass the phone to the next player. The final hide starts the round.</p>
+              </div>
+            </li>
+            <li class="how-to-play-step">
+              <span class="how-to-play-art">
+                <img src="assets/role-agent-256.png" alt="" aria-hidden="true">
+                <span class="how-to-play-number" aria-hidden="true">03</span>
+              </span>
+              <div>
+                <h4>Ask, bluff, accuse</h4>
+                <p>Talk around the location without giving it away. Answer in character if you like; don’t say your role outright. Watch who sounds lost.</p>
+              </div>
+            </li>
+            <li class="how-to-play-step">
+              <span class="how-to-play-art">
+                <img src="assets/role-spy-256.png" alt="" aria-hidden="true">
+                <span class="how-to-play-number" aria-hidden="true">04</span>
+              </span>
+              <div>
+                <h4>Vote, then guess</h4>
+                <p>Pick the spy. If you’re right, the spy gets one last shot at the secret.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">The board</h3>
+          <p>Every round deals a board of twenty-four places out of sixty-five, and
+            the real one is always on it. Everyone can see the board — open
+            <em>Possible locations</em> during the round, and the full list when
+            the spy has to guess. It narrows the search without giving it away.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">Your role</h3>
+          <p>Every place comes with a handful of characters. Your card names the
+            place and the character you are there — <em>“Food court — you’re the
+            pastry chef.”</em> That is your cue to talk like someone who works
+            there. With your own secret there is no place and no role, only the
+            secret itself.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">The questions</h3>
+          <p>The phone deals a prompt and anyone can draw another — <em>“What is
+            the loudest thing here?”</em> Everyone answers in character. The
+            prompts are the same for the spy, so a prompt never gives the place
+            away — but inventing an answer for a place you have never seen is
+            the hardest thing in the game.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">Chaos mode</h3>
+          <p>Optional: one extra public rule for the round, like <em>answers must
+            be exactly three words</em> or <em>nobody may use the word “the”</em>.
+            Everyone can see it, and it is the hardest rule to keep up for five
+            minutes.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">The vote and the last shot</h3>
+          <p>Talk it out, then the room picks one suspect. Name the spy and the
+            spy gets one last shot: they choose the place from the board. Guess
+            it and the spies take the round. Guess wrong and the room takes it.
+            Call the wrong player and the spies take the round outright.</p>
+        </section>
+
+        <section class="rules-section">
+          <h3 class="rules-heading">Scoring</h3>
+          <dl class="rules-scores">
+            <div>
+              <dt>Spies name the place</dt>
+              <dd>3 points each</dd>
+            </div>
+            <div>
+              <dt>Spies slip away uncaught</dt>
+              <dd>2 points each</dd>
+            </div>
+            <div>
+              <dt>The room wins the round</dt>
+              <dd>2 points each</dd>
+            </div>
+            <div>
+              <dt>Five rounds</dt>
+              <dd>the leaderboard decides it</dd>
+            </div>
+          </dl>
+        </section>
       </div>
     </dialog>
 

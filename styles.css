@@ -1249,6 +1249,28 @@ fieldset {
   text-align: center;
 }
 
+.setup-rules-link {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.rules-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brass);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.rules-link:hover {
+  color: var(--brass-bright);
+}
+
 .setup-board .button-primary {
   min-height: 3.5rem;
   font-size: 1.0625rem;
@@ -2879,18 +2901,152 @@ fieldset {
 }
 
 .how-to-play-modal {
-  max-width: 38rem;
+  max-width: 42rem;
 }
 
 .how-to-play-panel {
-  padding: 1.5rem;
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* A rules page, not a popover: full height on a phone so it reads like one. */
+@media (max-width: 40rem) {
+  .how-to-play-modal {
+    width: 100%;
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+}
+
+.rules-section {
+  padding-top: 1.25rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.rules-heading {
+  margin: 0 0 0.625rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.rules-section > p {
+  margin-bottom: 0;
+  color: var(--text-soft);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.rules-section em {
+  color: var(--brass-bright);
+  font-style: normal;
+}
+
+/* The two cards a player can be holding. */
+.rules-specimens {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.rules-specimen {
+  margin: 0;
+}
+
+.rules-specimen-card {
+  display: grid;
+  gap: 0.25rem;
+  min-height: 8rem;
+  padding: 0.875rem 0.75rem;
+  border: 1px solid rgba(79, 209, 200, 0.55);
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg, rgba(79, 209, 200, 0.16), transparent 55%),
+    var(--ink-850);
+  text-align: center;
+}
+
+.rules-specimen.is-spy .rules-specimen-card {
+  border-color: rgba(255, 122, 92, 0.6);
+  background:
+    linear-gradient(135deg, rgba(255, 122, 92, 0.18), transparent 55%),
+    var(--ink-850);
+}
+
+.rules-specimen-card .secret-label {
+  margin-bottom: 0.25rem;
+}
+
+.rules-specimen-secret {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.rules-specimen-role {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.rules-specimen figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.rules-scores {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.rules-scores > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--r-xs);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rules-scores dt {
+  color: var(--text-soft);
+  font-size: 0.875rem;
+}
+
+.rules-scores dd {
+  margin: 0;
+  color: var(--brass);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .how-to-play-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 0.75rem;
+  background: var(--ink-700);
 }
 
 .how-to-play-heading .section-kicker {
@@ -2957,7 +3113,7 @@ fieldset {
   letter-spacing: 0;
 }
 
-.how-to-play-step h3 {
+.how-to-play-step h4 {
   margin: 0 0 0.25rem;
   font-size: 1rem;
 }
