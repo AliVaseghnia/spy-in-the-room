@@ -87,7 +87,7 @@ test('custom-secret mode and pass-the-phone visuals have explicit browser contra
   ]) {
     assert.match(html, new RegExp(`id=["']${id}["']`), `missing custom-secret surface: ${id}`);
   }
-  for (const asset of ['assets/role-spy.png', 'assets/role-agent.png', 'assets/pass-phone.png']) {
+  for (const asset of ['assets/role-spy-256.png', 'assets/role-agent-256.png', 'assets/pass-phone-256.png']) {
     assert.equal(fs.existsSync(path.join(PROJECT_ROOT, asset)), true, `missing local visual asset: ${asset}`);
     assert.match(html, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -100,23 +100,24 @@ test('custom-secret mode and pass-the-phone visuals have explicit browser contra
   assert.match(controller, /pendingReplaySecret/);
   assert.match(controller, /data-resume-delete-game-id/);
   assert.match(controller, /function confirmResumeDelete\s*\(/);
-  assert.match(view, /assets\/role-spy\.png/);
+  assert.match(view, /assets\/role-spy-256\.png/);
   assert.match(css, /data-role=["']spy["']/);
   assert.match(css, /data-role=["']agent["']/);
 });
 
-test('home masthead stays copy-first without decorative artwork', () => {
+test('home masthead stays copy-first with a single brand mark', () => {
   const html = readProjectFile('index.html');
   const css = readProjectFile('styles.css');
 
   assert.match(html, /<div class=["']intro-copy-block["']>[\s\S]*<h1[^>]*id=["']page-title["']/);
+  assert.match(html, /class=["']intro-mark["']/);
   assert.doesNotMatch(html, /class=["']intro-support-row["']/);
-  assert.doesNotMatch(html, /class=["']intro-art["']/);
   assert.doesNotMatch(html, /class=["']dossier["']/);
+  // Gameplay instructions stay in the how-to-play dialog, not on the masthead.
+  assert.doesNotMatch(html, /class=["']intro-steps["']/);
   assert.match(html, /<section id=["']resume-view["'][\s\S]*<section id=["']connection-error["']/);
   assert.doesNotMatch(css, /\.intro-support-row\b/);
-  assert.doesNotMatch(css, /\.intro-art\b/);
-  assert.match(css, /\.intro\s*\{[\s\S]*margin-bottom:\s*1rem;/);
+  assert.match(css, /\.intro-mark\b/);
 });
 
 test('home screen keeps gameplay instructions behind the how-to-play dialog', () => {

@@ -35,6 +35,16 @@
     result: 'Round complete'
   };
   var VIEW_PHASES = ['resume', 'setup', 'reveal', 'round', 'accuse', 'guess', 'result'];
+  // The header tracker shows the five visible steps of a game.
+  var PHASE_STEPS = {
+    setup: 1,
+    resume: 1,
+    reveal: 2,
+    round: 3,
+    accuse: 4,
+    'spy-guess': 4,
+    result: 5
+  };
 
   var state = {
     snapshot: null,
@@ -75,6 +85,7 @@
     showEndRoundDialog: false,
     showReplaySecretForm: false,
     showGuessCallPanel: false,
+    actionError: '',
     privacyLocked: false,
     revealPending: false,
     cardHidden: false,
@@ -83,6 +94,7 @@
     question: null,
     twist: '',
     guessFilter: '',
+    guessCategory: '',
     shareStatus: '',
     wakeLock: null,
     soundEnabled: true,
@@ -123,6 +135,8 @@
       playerForm: getElement('player-form'),
       playerNameInput: getElement('player-name-input'),
       playerChips: getElement('player-chips'),
+      revealSeat: getElement('reveal-seat'),
+      phaseStepper: getElement('phase-stepper'),
       playerCount: getElement('player-count'),
       playerEmptyState: getElement('player-empty-state'),
       playerError: getElement('player-error'),
@@ -164,6 +178,8 @@
       timerRing: getElement('timer-ring'),
       timerRingProgress: getElement('timer-ring-progress'),
       roundIntel: getElement('round-intel'),
+      roundRoster: getElement('round-roster'),
+      roundTimeup: getElement('round-timeup'),
       twistStrip: getElement('twist-strip'),
       twistText: getElement('twist-text'),
       questionPrompt: getElement('question-prompt'),
@@ -171,12 +187,14 @@
       roundLocationHint: getElement('round-location-hint'),
       locationBoard: getElement('location-board'),
       locationBoardList: getElement('location-board-list'),
+      locationBoardLabel: getElement('location-board-label'),
       endRoundButton: getElement('end-round-button'),
       endRoundDialog: getElement('end-round-dialog'),
       confirmEndRoundButton: getElement('confirm-end-round-button'),
       cancelEndRoundButton: getElement('cancel-end-round-button'),
       callGuessButton: getElement('call-guess-button'),
       guessCallPanel: getElement('guess-call-panel'),
+      guessCallError: getElement('guess-call-error'),
       guessCallerList: getElement('guess-caller-list'),
       accuseView: getElement('accuse-view'),
       suspectList: getElement('suspect-list'),
@@ -189,6 +207,7 @@
       guessList: getElement('guess-list'),
       guessSearchField: getElement('guess-search-field'),
       guessSearchInput: getElement('guess-search-input'),
+      guessFilters: getElement('guess-filters'),
       guessCustomForm: getElement('guess-custom-form'),
       guessInput: getElement('guess-input'),
       guessInputError: getElement('guess-input-error'),
@@ -201,6 +220,7 @@
       hapticsToggle: getElement('haptics-toggle'),
       resultView: getElement('result-view'),
       resultStamp: getElement('result-stamp'),
+      resultRecap: getElement('result-recap'),
       resultStampLabel: getElement('result-stamp-label'),
       resultTitle: getElement('result-title'),
       resultCopy: getElement('result-copy'),
@@ -257,6 +277,10 @@
     refs.startButton.disabled = !validation.ok || !state.sessionReady;
     refs.startButton.disabled = refs.startButton.disabled
       || !secretValidation.ok || state.mutationBusy;
+    // The action bar only floats once there is a table worth dealing.
+    if (refs.app) {
+      refs.app.dataset.setupReady = refs.startButton.disabled ? 'false' : 'true';
+    }
     refs.addPlayerButton.disabled = names.length >= MAX_PLAYERS || state.mutationBusy;
     refs.playerEmptyState.hidden = names.length >= MIN_PLAYERS;
     refs.playerEmptyState.textContent = names.length === 0
@@ -770,6 +794,11 @@
       if (urgency) refs.timerRing.setAttribute('data-urgency', urgency);
       else refs.timerRing.removeAttribute('data-urgency');
     }
+    if (refs.roundTimeup) refs.roundTimeup.hidden = secondsRemaining > 0;
+    if (refs.endRoundButton) {
+      if (secondsRemaining <= 0) refs.endRoundButton.setAttribute('data-urgent', 'true');
+      else refs.endRoundButton.removeAttribute('data-urgent');
+    }
   }
 
   function isFocusedDisplay() {
@@ -831,8 +860,15 @@
         ? 'Ten seconds left.'
         : 'One minute left.';
     }
+    if (secondsRemaining === 0 && state.lastTimerCue !== 0) {
+      state.lastTimerCue = 0;
+      emitCue('warning', [40, 40, 40]);
+      if (refs.announcement) refs.announcement.textContent = 'Time’s up. The room votes now.';
+    }
     if (secondsRemaining <= 0 && isFocusedDisplay()) {
-      refreshAuthoritativeState('Checking the latest round state.');
+      refreshAuthoritativeState(state.lastTimerCue === 0
+        ? 'Time’s up. The room votes now.'
+        : 'Checking the latest round state.');
     }
   }
 
@@ -1005,6 +1041,7 @@
       refs: refs,
       state: state,
       defaultTimerSeconds: DEFAULT_TIMER_SECONDS,
+      maxPlayers: MAX_PLAYERS,
       resumePhaseLabels: RESUME_PHASE_LABELS,
       avatarFor: logic.avatarForIndex,
       updateSetupControls: updateSetupControls,
@@ -1012,6 +1049,18 @@
       closeAccusationDialog: closeAccusationDialog,
       closeGuessDialog: closeGuessDialog
     };
+  }
+
+  function renderPhaseStepper(phase) {
+    var stepper = refs.phaseStepper;
+    if (!stepper) return;
+
+    var current = PHASE_STEPS[phase] || 1;
+    Array.prototype.forEach.call(stepper.children, function (item) {
+      var step = Number(item.getAttribute('data-step')) || 0;
+      item.classList.toggle('is-current', step === current);
+      item.classList.toggle('is-done', step < current);
+    });
   }
 
   function render() {
@@ -1057,6 +1106,7 @@
 
     if (activeView) activeView.hidden = false;
     refs.phaseLabel.textContent = PHASE_LABELS[phase] || 'Get ready';
+    renderPhaseStepper(phase);
     refs.roundStatus.textContent = state.snapshot && state.snapshot.players
       ? 'Round ' + state.snapshot.roundNumber + ' / 5 · ' + state.snapshot.players.length + ' players'
       : '4 to 12 players';
@@ -1125,8 +1175,14 @@
     });
   }
 
-  function handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken) {
+  function handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken, onRejected) {
     if (!releaseMutation(generation, operationToken)) return;
+    if (onRejected && error && error.status === 409 && error.code === 'INVALID_STATE') {
+      // The move was refused by the rules, not by the network: let the caller say so.
+      state.retryOperation = null;
+      onRejected(error);
+      return;
+    }
     if (error && (error.status === 409 || error.code === 'REVISION_CONFLICT')) {
       state.retryOperation = null;
       reloadAfterConflict(gameId, generation);
@@ -1135,7 +1191,7 @@
     showConnectionError(error, retryOperation, operationEpoch);
   }
 
-  function runIntent({ gameId, generation, execute, onSuccess }) {
+  function runIntent({ gameId, generation, execute, onSuccess, onRejected }) {
     var retryOperation;
 
     if (state.mutationBusy) return Promise.resolve(null);
@@ -1157,7 +1213,7 @@
         onSuccess(result);
         return result;
       }).catch(function (error) {
-        handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken);
+        handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken, onRejected);
         return null;
       });
     };
@@ -1202,8 +1258,10 @@
         ? logic.twistForRound(snapshot.gameId, snapshot.roundNumber)
         : '';
       state.guessFilter = '';
+      state.guessCategory = '';
     }
     if (snapshot.phase !== 'accuse') state.pendingAccusationPlayerId = null;
+    if (snapshot.phase !== 'round') state.actionError = '';
     if (snapshot.phase !== 'spy-guess') state.pendingGuessLocation = null;
     if (snapshot.phase !== 'round') state.showGuessCallPanel = false;
     if (snapshot.phase !== 'result') {
@@ -1534,13 +1592,14 @@
     });
   }
 
-  function sendGameAction(command) {
+  function sendGameAction(command, options) {
     var snapshot = state.snapshot;
     var generation;
     var gameId;
     var revision;
     var idempotencyKey;
     var payload = typeof command === 'string' ? { type: command } : Object.assign({}, command);
+    var onRejected = options && typeof options.onRejected === 'function' ? options.onRejected : null;
 
     if (!snapshot || state.mutationBusy) return;
     generation = state.generation;
@@ -1551,6 +1610,7 @@
     runIntent({
       gameId: gameId,
       generation: generation,
+      onRejected: onRejected,
       execute: function () {
         return api.act(gameId, payload, revision, { idempotencyKey: idempotencyKey });
       },
@@ -1798,8 +1858,16 @@
       render();
       focusElement(refs.confirmAccusationButton);
     } else if (action === 'call-guess' && currentPhase() === 'round') {
+      state.actionError = '';
       state.showGuessCallPanel = false;
-      sendGameAction({ type: 'call-guess', playerId: value });
+      sendGameAction({ type: 'call-guess', playerId: value }, {
+        onRejected: function (error) {
+          state.actionError = error.message || 'Only the spy can call for a guess.';
+          state.showGuessCallPanel = true;
+          setAnnouncement(state.actionError);
+          render();
+        }
+      });
     } else if (action === 'guess' && currentPhase() === 'spy-guess') {
       state.pendingGuessLocation = value;
       setAnnouncement('Guess selected. Check it before locking it in.');
@@ -1884,6 +1952,16 @@
     render();
   }
 
+  function handleGuessCategory(event) {
+    var chip = event.target.closest ? event.target.closest('[data-guess-category]') : null;
+    if (!chip) return;
+    state.guessCategory = chip.getAttribute('data-guess-category') || '';
+    setAnnouncement(state.guessCategory
+      ? 'Showing ' + state.guessCategory + ' locations.'
+      : 'Showing every location on the board.');
+    render();
+  }
+
   function handleSpiceChange() {
     state.prefs.spice = Boolean(refs.spiceToggle && refs.spiceToggle.checked);
     if (prefs && typeof prefs.saveFlags === 'function') prefs.saveFlags({ spice: state.prefs.spice });
@@ -1900,10 +1978,11 @@
     var spyNames = spies.map(function (spy) {
       return spy && spy.displayName ? spy.displayName : String(spy);
     }).join(' and ');
+    var recap = typeof view.describeOutcome === 'function' ? view.describeOutcome(outcome) : '';
     var text = 'Spy in the Room · Round ' + (snapshot ? snapshot.roundNumber : 1) + ': '
       + (outcome.winner === 'spies' ? 'the spies win' : 'the room wins')
-      + '. ' + (spies.length > 1 ? 'Spies: ' : 'Spy: ') + spyNames
-      + '. Secret: ' + (outcome.location || 'unknown') + '.';
+      + '. ' + (recap || ((spies.length > 1 ? 'Spies: ' : 'Spy: ') + spyNames
+        + '. Secret: ' + (outcome.location || 'unknown') + '.'));
     var navigatorRef = root && root.navigator;
 
     function copied() {
@@ -1960,8 +2039,9 @@
   function toggleGuessCallPanel() {
     if (state.mutationBusy || currentPhase() !== 'round') return;
     state.showGuessCallPanel = !state.showGuessCallPanel;
+    if (state.showGuessCallPanel) state.actionError = '';
     setAnnouncement(state.showGuessCallPanel
-      ? 'Pass the phone to the player calling for a guess.'
+      ? 'Guess call open. Only the spy can take this shot.'
       : 'Guess call closed.');
     render();
     if (state.showGuessCallPanel) focusElement(getFirstChoice(refs.guessCallerList));
@@ -2104,6 +2184,9 @@
   function bindEvents() {
     if (refs.howToPlayButton && refs.howToPlayDialog && refs.closeHowToPlayButton) {
       refs.howToPlayButton.addEventListener('click', openHowToPlay);
+      Array.prototype.forEach.call(documentRef.querySelectorAll('[data-open-how-to-play]'), function (trigger) {
+        trigger.addEventListener('click', openHowToPlay);
+      });
       refs.closeHowToPlayButton.addEventListener('click', closeHowToPlay);
       refs.howToPlayDialog.addEventListener('cancel', function (event) {
         event.preventDefault();
@@ -2181,6 +2264,7 @@
     refs.drawQuestionButton.addEventListener('click', handleDrawQuestion);
     refs.shareResultButton.addEventListener('click', handleShareResult);
     refs.guessSearchInput.addEventListener('input', handleGuessFilter);
+    if (refs.guessFilters) refs.guessFilters.addEventListener('click', handleGuessCategory);
     refs.endRoundButton.addEventListener('click', openEndRoundDialog);
     refs.confirmEndRoundButton.addEventListener('click', confirmEndRound);
     refs.cancelEndRoundButton.addEventListener('click', cancelEndRound);

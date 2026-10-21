@@ -21,8 +21,11 @@ test('manifest describes an installable standalone shell with local app icons', 
   assert.equal(manifest.start_url, './');
   assert.equal(manifest.scope, './');
   assert.equal(manifest.display, 'standalone');
-  assert.equal(manifest.theme_color, '#10161e');
-  assert.equal(manifest.background_color, '#10161e');
+  // The installed shell must paint the same colour the page does.
+  const shellTheme = readProjectFile('index.html')
+    .match(/<meta[^>]+name=["']theme-color["'][^>]+content=["']([^"']+)["']/i)?.[1];
+  assert.equal(manifest.theme_color, shellTheme);
+  assert.equal(manifest.background_color, manifest.theme_color);
   assert.ok(Array.isArray(manifest.icons));
   assert.ok(manifest.icons.length >= 2, 'the manifest should provide small and large install icons');
 
