@@ -832,6 +832,11 @@ fieldset {
   color: var(--text-soft);
 }
 
+/* Errors inside a panel have to outrank the panel's own paragraph colour. */
+.inline-panel > p.field-message-error {
+  color: var(--red);
+}
+
 .sticky-action {
   position: sticky;
   bottom: 0;

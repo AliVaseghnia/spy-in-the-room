@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=20">
+    <link rel="stylesheet" href="styles.css?v=21">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -297,7 +297,7 @@
             </div>
 
             <details id="location-board" class="question-protocol location-board" hidden>
-              <summary>Possible locations</summary>
+              <summary><span id="location-board-label">Possible locations</span></summary>
               <ul id="location-board-list" class="location-board-grid" aria-label="Possible locations"></ul>
             </details>
 
@@ -316,8 +316,9 @@
 
             <div id="guess-call-panel" class="inline-panel" aria-labelledby="guess-call-title" hidden>
               <p class="section-kicker">Private call</p>
-              <h3 id="guess-call-title">Who wants to guess?</h3>
-              <p>Pass the phone to the player who wants to risk a guess. The round ends either way.</p>
+              <h3 id="guess-call-title">The spy takes the shot</h3>
+              <p>Only the spy can call this. The spy picks their own name — the round ends either way.</p>
+              <p id="guess-call-error" class="field-message field-message-error" role="alert" hidden></p>
               <ul id="guess-caller-list" class="choice-list" aria-label="Choose who wants to guess"></ul>
             </div>
           </section>
@@ -643,8 +644,8 @@
     <script src="game-logic.js?v=16"></script>
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
-    <script src="game-view.js?v=20"></script>
-    <script src="game.js?v=20"></script>
+    <script src="game-view.js?v=21"></script>
+    <script src="game.js?v=21"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

@@ -288,6 +288,11 @@
         });
       }
     }
+    if (refs.locationBoardLabel) {
+      refs.locationBoardLabel.textContent = hasLocationBoard
+        ? 'Possible locations · ' + locationBoard.length
+        : 'Possible locations';
+    }
 
     clearList(refs.guessCallerList);
     players.forEach(function (player, index) {
@@ -299,7 +304,11 @@
     refs.guessCallPanel.hidden = !state.showGuessCallPanel;
     refs.callGuessButton.textContent = state.showGuessCallPanel
       ? 'Close guess call'
-      : 'Spy: I have the secret';
+      : 'Spy: call the last shot';
+    if (refs.guessCallError) {
+      refs.guessCallError.textContent = state.actionError || '';
+      refs.guessCallError.hidden = !state.actionError;
+    }
 
     if (refs.roundIntel) {
       var spyCount = ctx.logic.getSpyCount(players.length || 4);

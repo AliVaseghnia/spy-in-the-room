@@ -85,6 +85,7 @@
     showEndRoundDialog: false,
     showReplaySecretForm: false,
     showGuessCallPanel: false,
+    actionError: '',
     privacyLocked: false,
     revealPending: false,
     cardHidden: false,
@@ -186,12 +187,14 @@
       roundLocationHint: getElement('round-location-hint'),
       locationBoard: getElement('location-board'),
       locationBoardList: getElement('location-board-list'),
+      locationBoardLabel: getElement('location-board-label'),
       endRoundButton: getElement('end-round-button'),
       endRoundDialog: getElement('end-round-dialog'),
       confirmEndRoundButton: getElement('confirm-end-round-button'),
       cancelEndRoundButton: getElement('cancel-end-round-button'),
       callGuessButton: getElement('call-guess-button'),
       guessCallPanel: getElement('guess-call-panel'),
+      guessCallError: getElement('guess-call-error'),
       guessCallerList: getElement('guess-caller-list'),
       accuseView: getElement('accuse-view'),
       suspectList: getElement('suspect-list'),
@@ -1170,6 +1173,15 @@
 
   function handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken) {
     if (!releaseMutation(generation, operationToken)) return;
+    if (error && error.status === 409 && error.code === 'INVALID_STATE') {
+      // The move was refused by the rules, not by the network: say so.
+      state.retryOperation = null;
+      state.actionError = error.message || 'That move is not allowed right now.';
+      if (currentPhase() === 'round') state.showGuessCallPanel = true;
+      setAnnouncement(state.actionError);
+      render();
+      return;
+    }
     if (error && (error.status === 409 || error.code === 'REVISION_CONFLICT')) {
       state.retryOperation = null;
       reloadAfterConflict(gameId, generation);
@@ -1248,6 +1260,7 @@
       state.guessCategory = '';
     }
     if (snapshot.phase !== 'accuse') state.pendingAccusationPlayerId = null;
+    if (snapshot.phase !== 'round') state.actionError = '';
     if (snapshot.phase !== 'spy-guess') state.pendingGuessLocation = null;
     if (snapshot.phase !== 'round') state.showGuessCallPanel = false;
     if (snapshot.phase !== 'result') {
@@ -1842,6 +1855,7 @@
       render();
       focusElement(refs.confirmAccusationButton);
     } else if (action === 'call-guess' && currentPhase() === 'round') {
+      state.actionError = '';
       state.showGuessCallPanel = false;
       sendGameAction({ type: 'call-guess', playerId: value });
     } else if (action === 'guess' && currentPhase() === 'spy-guess') {
@@ -2015,8 +2029,9 @@
   function toggleGuessCallPanel() {
     if (state.mutationBusy || currentPhase() !== 'round') return;
     state.showGuessCallPanel = !state.showGuessCallPanel;
+    if (state.showGuessCallPanel) state.actionError = '';
     setAnnouncement(state.showGuessCallPanel
-      ? 'Pass the phone to the player calling for a guess.'
+      ? 'Guess call open. Only the spy can take this shot.'
       : 'Guess call closed.');
     render();
     if (state.showGuessCallPanel) focusElement(getFirstChoice(refs.guessCallerList));
