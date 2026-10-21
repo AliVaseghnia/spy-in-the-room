@@ -53,24 +53,42 @@ built to feel like a game you reach for again:
 - **A board the spy can think in.** The last shot can be narrowed by category
   (food, travel, public places…) as well as by name, so the spy is reasoning
   about places instead of scrolling a list of 24.
+- **A board the whole room can see.** Those 24 possible places stay public
+  during the round, so the room can narrow it down together — and the spy has
+  to argue their way out of it.
+- **It teaches before it tests.** The rules live in the game as a document, not
+  a popover: what you are holding, the board, your role, the questions, chaos
+  mode, the vote, the last shot, the scoring.
 - **It remembers your table.** Names, cue preferences, and chaos mode are
   stored on the device. Nothing about the game itself ever is.
 
 ## How to play
+
+The game ships these rules too — open **How to play** from the home screen or
+from the briefing board.
+
+**What you are holding.** Every card names a place and a character, except the
+spy’s: *Food court — you’re the pastry chef*, or *You’re the spy*. The room
+knows the place; the spy gets a board of 24 possible places and has to invent
+one that holds up.
 
 1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Standard games
    sample a 24-location board from the 65 built-in locations; custom games use
    your own secret.
 2. **Reveal, hide & pass.** The named player reveals their card, then hides it
    with one tap to pass the phone onward. The last hide starts the round.
-   Built-in location cards also give each non-spy a role prompt; custom
-   secrets do not. Answer in character if you like; don’t say your role outright.
    9–12 players get **two spies** who know each other.
-3. **Ask, bluff, vote.** Ask one question at a time without revealing the
-   location. When the clock stops, the room names one suspect.
+3. **Ask, bluff, vote.** The phone deals a location-agnostic question ("What
+   is the most expensive thing here?") and anyone can draw another. Answer in
+   character. Everyone draws from the same prompts, so a question never gives
+   the place away — but inventing an answer for a place you have never seen is
+   the hardest thing in the game. The 24-place board is public, so the room can
+   narrow it down together. Optional **chaos mode** adds one public rule for
+   the round, such as *answers must be exactly three words*. When the clock
+   stops, the room names one suspect.
 4. **Last shot.** If the room accuses a spy, the spy gets one guess from the
-   location board. Name the secret and the spies steal the round; miss and the
-   room wins.
+   board, narrowed by category if they want help. Name the secret and the
+   spies steal the round; miss and the room wins.
 5. **Five rounds.** Points land on a running leaderboard — spies score 3 for
    a correct guess and 2 otherwise, the room scores 2.
 
@@ -82,7 +100,8 @@ built to feel like a game you reach for again:
 | Rounds | 3 / 5 / 8 minute timers, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
 | Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
-| Feel | Explicit handoff cards, location-role prompts, flip animation, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker, round recap, category filters on the last shot |
+| Feel | Explicit handoff cards, location-role prompts, a card that catches the light, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker, public location board, round recap, category filters on the last shot |
+| Rules | The full rules live in the game as a document — what you are holding, the board, your role, the questions, chaos mode, the vote, the scoring |
 | Platform | Installable PWA shell, offline reconnect fallback, mobile-first responsive layout |
 | Accessibility | Full keyboard flow, live-region announcements, focus management, `prefers-reduced-motion` support |
 | Privacy | Server-authoritative roles; pre-result snapshots expose the sorted candidate board but never the true location, spy flags, or roles |
