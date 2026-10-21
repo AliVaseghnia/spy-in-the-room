@@ -67,14 +67,18 @@ built to feel like a game you reach for again:
 The game ships these rules too — open **How to play** from the home screen or
 from the briefing board.
 
-**What you are holding.** Every card names a place and a character, except the
-spy’s: *Food court — you’re the pastry chef*, or *You’re the spy*. The room
-knows the place; the spy gets a board of 24 possible places and has to invent
-one that holds up. Answer in character if you like; don’t say your role outright.
+**What you are holding.** A built-in card names a place and a character —
+*Food court — you’re the pastry chef* — while the spy’s card says only
+*You’re the spy*. The room knows the place; the spy gets a board of 24 possible
+places and has to invent one that holds up.
+Answer in character if you like; don’t say your role outright.
 
-1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Standard games
-   sample a 24-location board from the 65 built-in locations; custom games use
-   your own secret.
+Bring your own secret instead and the card reads *Secret: rooftop garden* —
+no place, no character, and no role to play.
+
+1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round, or set any length
+   from 1 to 60. Standard games sample a 24-location board from the 65
+   built-in locations; custom games use your own secret.
 2. **Reveal, hide & pass.** The named player reveals their card, then hides it
    with one tap to pass the phone onward. The last hide starts the round.
    9–12 players get **two spies** who know each other.
@@ -97,7 +101,7 @@ one that holds up. Answer in character if you like; don’t say your role outrig
 | | |
 |---|---|
 | Players | 4–12, one phone, no accounts |
-| Rounds | 3 / 5 / 8 minute timers, five-round sessions |
+| Rounds | 3 / 5 / 8 minute timers or any 1–60, five-round sessions |
 | Spies | 1 spy (4–8), 2 partnered spies (9–12) |
 | Secrets | Alphabetized 24-location board sampled from 65 built-in locations across 8 categories, or a custom secret |
 | Feel | Explicit handoff cards, location-role prompts, a card that catches the light, timer ring, twists, avatars, audio + haptics, noir case-file art direction, seat board, phase tracker, public location board, round recap, category filters on the last shot |
