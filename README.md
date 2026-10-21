@@ -70,7 +70,7 @@ from the briefing board.
 **What you are holding.** Every card names a place and a character, except the
 spy’s: *Food court — you’re the pastry chef*, or *You’re the spy*. The room
 knows the place; the spy gets a board of 24 possible places and has to invent
-one that holds up.
+one that holds up. Answer in character if you like; don’t say your role outright.
 
 1. **Add the room (4–12).** Pick a 3, 5, or 8 minute round. Standard games
    sample a 24-location board from the 65 built-in locations; custom games use
