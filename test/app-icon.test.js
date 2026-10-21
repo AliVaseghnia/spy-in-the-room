@@ -20,7 +20,11 @@ test('app identity uses the approved icon without repeating it inside the reveal
     'assets/app-icon-64.png',
     'assets/app-icon-180.png',
     'assets/app-icon-192.png',
-    'assets/app-icon-512.png'
+    'assets/app-icon-256.png',
+    'assets/app-icon-512.png',
+    'assets/pass-phone-256.png',
+    'assets/role-agent-256.png',
+    'assets/role-spy-256.png'
   ]) {
     assert.equal(fs.existsSync(path.join(PROJECT_ROOT, asset)), true, `missing app icon asset: ${asset}`);
   }
@@ -29,7 +33,7 @@ test('app identity uses the approved icon without repeating it inside the reveal
   assert.match(html, /<link rel=["']apple-touch-icon["'][^>]+href=["']assets\/app-icon-180\.png["']/i);
   assert.match(html, /<img[^>]+class=["'][^"']*brand-mark[^"']*["'][^>]+src=["']assets\/app-icon-64\.png["']/i);
   assert.doesNotMatch(html, /id=["']reveal-avatar["']/i);
-  assert.match(html, /class=["'][^"']*reveal-front-art[^"']*["'][^>]+src=["']assets\/pass-phone\.png["']/i);
+  assert.match(html, /class=["'][^"']*reveal-front-art[^"']*["'][^>]+src=["']assets\/pass-phone-256\.png["']/i);
 
   assert.deepEqual(
     manifest.icons.map((icon) => ({ src: icon.src, sizes: icon.sizes, type: icon.type })),
@@ -43,7 +47,11 @@ test('app identity uses the approved icon without repeating it inside the reveal
     '/assets/app-icon-64.png',
     '/assets/app-icon-180.png',
     '/assets/app-icon-192.png',
-    '/assets/app-icon-512.png'
+    '/assets/app-icon-512.png',
+    '/assets/app-icon-256.png',
+    '/assets/pass-phone-256.png',
+    '/assets/role-agent-256.png',
+    '/assets/role-spy-256.png'
   ]) {
     assert.match(worker, new RegExp(`['"]${asset.replaceAll('.', '\\.') }['"]`), `service worker must precache ${asset}`);
   }

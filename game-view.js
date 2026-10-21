@@ -189,7 +189,7 @@
           : 'Everyone can look up when the round starts.'
         : 'Only ' + player.displayName + ' should see this.';
       if (refs.revealArt) {
-        refs.revealArt.src = 'assets/pass-phone.png';
+        refs.revealArt.src = 'assets/pass-phone-256.png';
         refs.revealArt.alt = '';
       }
       if (refs.revealActionLabel) {
@@ -222,7 +222,7 @@
     refs.revealLabel.textContent = card.isSpy ? 'Your role' : 'Your assignment';
     if (refs.revealCardFace) refs.revealCardFace.setAttribute('data-role', card.isSpy ? 'spy' : 'agent');
     if (refs.revealArt) {
-      refs.revealArt.src = card.isSpy ? 'assets/role-spy.png' : 'assets/role-agent.png';
+      refs.revealArt.src = card.isSpy ? 'assets/role-spy-256.png' : 'assets/role-agent-256.png';
       refs.revealArt.alt = '';
     }
     refs.revealSecret.textContent = card.isSpy

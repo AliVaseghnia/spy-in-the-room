@@ -87,7 +87,7 @@ test('custom-secret mode and pass-the-phone visuals have explicit browser contra
   ]) {
     assert.match(html, new RegExp(`id=["']${id}["']`), `missing custom-secret surface: ${id}`);
   }
-  for (const asset of ['assets/role-spy.png', 'assets/role-agent.png', 'assets/pass-phone.png']) {
+  for (const asset of ['assets/role-spy-256.png', 'assets/role-agent-256.png', 'assets/pass-phone-256.png']) {
     assert.equal(fs.existsSync(path.join(PROJECT_ROOT, asset)), true, `missing local visual asset: ${asset}`);
     assert.match(html, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -100,7 +100,7 @@ test('custom-secret mode and pass-the-phone visuals have explicit browser contra
   assert.match(controller, /pendingReplaySecret/);
   assert.match(controller, /data-resume-delete-game-id/);
   assert.match(controller, /function confirmResumeDelete\s*\(/);
-  assert.match(view, /assets\/role-spy\.png/);
+  assert.match(view, /assets\/role-spy-256\.png/);
   assert.match(css, /data-role=["']spy["']/);
   assert.match(css, /data-role=["']agent["']/);
 });
