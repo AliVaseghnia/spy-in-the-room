@@ -1171,15 +1171,12 @@
     });
   }
 
-  function handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken) {
+  function handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken, onRejected) {
     if (!releaseMutation(generation, operationToken)) return;
-    if (error && error.status === 409 && error.code === 'INVALID_STATE') {
-      // The move was refused by the rules, not by the network: say so.
+    if (onRejected && error && error.status === 409 && error.code === 'INVALID_STATE') {
+      // The move was refused by the rules, not by the network: let the caller say so.
       state.retryOperation = null;
-      state.actionError = error.message || 'That move is not allowed right now.';
-      if (currentPhase() === 'round') state.showGuessCallPanel = true;
-      setAnnouncement(state.actionError);
-      render();
+      onRejected(error);
       return;
     }
     if (error && (error.status === 409 || error.code === 'REVISION_CONFLICT')) {
@@ -1190,7 +1187,7 @@
     showConnectionError(error, retryOperation, operationEpoch);
   }
 
-  function runIntent({ gameId, generation, execute, onSuccess }) {
+  function runIntent({ gameId, generation, execute, onSuccess, onRejected }) {
     var retryOperation;
 
     if (state.mutationBusy) return Promise.resolve(null);
@@ -1212,7 +1209,7 @@
         onSuccess(result);
         return result;
       }).catch(function (error) {
-        handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken);
+        handleIntentError(error, gameId, generation, retryOperation, operationEpoch, operationToken, onRejected);
         return null;
       });
     };
@@ -1591,13 +1588,14 @@
     });
   }
 
-  function sendGameAction(command) {
+  function sendGameAction(command, options) {
     var snapshot = state.snapshot;
     var generation;
     var gameId;
     var revision;
     var idempotencyKey;
     var payload = typeof command === 'string' ? { type: command } : Object.assign({}, command);
+    var onRejected = options && typeof options.onRejected === 'function' ? options.onRejected : null;
 
     if (!snapshot || state.mutationBusy) return;
     generation = state.generation;
@@ -1608,6 +1606,7 @@
     runIntent({
       gameId: gameId,
       generation: generation,
+      onRejected: onRejected,
       execute: function () {
         return api.act(gameId, payload, revision, { idempotencyKey: idempotencyKey });
       },
@@ -1857,7 +1856,14 @@
     } else if (action === 'call-guess' && currentPhase() === 'round') {
       state.actionError = '';
       state.showGuessCallPanel = false;
-      sendGameAction({ type: 'call-guess', playerId: value });
+      sendGameAction({ type: 'call-guess', playerId: value }, {
+        onRejected: function (error) {
+          state.actionError = error.message || 'Only the spy can call for a guess.';
+          state.showGuessCallPanel = true;
+          setAnnouncement(state.actionError);
+          render();
+        }
+      });
     } else if (action === 'guess' && currentPhase() === 'spy-guess') {
       state.pendingGuessLocation = value;
       setAnnouncement('Guess selected. Check it before locking it in.');
