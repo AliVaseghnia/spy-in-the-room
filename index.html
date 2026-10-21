@@ -12,7 +12,7 @@
     <meta property="og:description" content="Pass the phone, bluff your way through the questions, and find the spies.">
     <meta name="twitter:card" content="summary">
     <title>Spy in the Room — Pass the phone</title>
-    <link rel="stylesheet" href="styles.css?v=21">
+    <link rel="stylesheet" href="styles.css?v=22">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to game</a>
@@ -69,12 +69,14 @@
               <h1 id="page-title">Someone in this room is lying.</h1>
               <p class="intro-lede">Pass the phone. Keep the secret. Find the spies.</p>
               <div class="intro-actions">
-                <a class="button button-primary" href="#setup-view">Set up the room</a>
+                <a class="button button-primary button-hero" href="#setup-view">Deal us in</a>
                 <button class="button button-ghost" type="button" data-open-how-to-play>How to play</button>
               </div>
+              <p class="intro-proof">Five minutes a round · no sign-up · no install</p>
             </div>
             <div class="intro-mark" aria-hidden="true">
               <span class="intro-mark-frame">
+                <span class="intro-mark-gleam"></span>
                 <img class="intro-mark-image" src="assets/app-icon-512.png" alt="">
               </span>
               <span class="intro-mark-tag">Case file · open</span>
@@ -206,12 +208,12 @@
                 </details>
               </div>
               </div>
-            </form>
 
-            <div class="sticky-action">
-              <button id="start-button" class="button button-primary button-wide" type="submit" form="player-form" disabled>Deal the cards</button>
-              <p id="player-empty-state" class="setup-hint" role="status">Add 4 names to start.</p>
-            </div>
+              <div class="sticky-action">
+                <button id="start-button" class="button button-primary button-wide" type="submit" form="player-form" disabled>Deal the cards</button>
+                <p id="player-empty-state" class="setup-hint" role="status">Add 4 names to start.</p>
+              </div>
+            </form>
           </section>
 
           <section id="reveal-view" class="phase-view action-card reveal-stage" data-phase="reveal" aria-labelledby="reveal-title" hidden>
@@ -645,7 +647,7 @@
     <script src="prefs.js?v=15"></script>
     <script src="api-client.js?v=15"></script>
     <script src="game-view.js?v=22"></script>
-    <script src="game.js?v=22"></script>
+    <script src="game.js?v=23"></script>
 
     <!-- Vercel Web Analytics: page views only; no game data or custom events. -->
     <script src="analytics-bootstrap.js?v=15"></script>

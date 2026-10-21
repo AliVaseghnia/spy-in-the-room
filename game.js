@@ -277,6 +277,10 @@
     refs.startButton.disabled = !validation.ok || !state.sessionReady;
     refs.startButton.disabled = refs.startButton.disabled
       || !secretValidation.ok || state.mutationBusy;
+    // The action bar only floats once there is a table worth dealing.
+    if (refs.app) {
+      refs.app.dataset.setupReady = refs.startButton.disabled ? 'false' : 'true';
+    }
     refs.addPlayerButton.disabled = names.length >= MAX_PLAYERS || state.mutationBusy;
     refs.playerEmptyState.hidden = names.length >= MIN_PLAYERS;
     refs.playerEmptyState.textContent = names.length === 0
